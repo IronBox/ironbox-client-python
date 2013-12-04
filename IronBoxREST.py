@@ -1,19 +1,20 @@
 #------------------------------------------------------------------------
 #   IronBox REST API Python wrapper
-#   Version: 1.3 (11/15/2013)
+#   Version: 1.4 (12/04/2013)
 #   Author: KevinLam@goironbox.com
 #   Website: www.goironbox.com
 #   Dependencies:
 #	pip install -r requirements.txt
 #
 #   Change History:
-#	11/10/2013  -	v1.1 Initial release (beta)
+#	12/04/2013  -	v1.4 Added GetContainerBlobInfoListByState
+#	11/15/2013  -	v1.3 Added x-ms-version in BlockBlob upload for 
+#			stricter adherence to protocol
 #	11/12/2013  -	v1.2 Removed dependency on M2Crypto, Urllib, 
 #			Urllib2, openssl and Json.  Added pycrypto.
 #			Using BlockBlob and re-assembling on the server
 #			as it's more efficient than PageBlobs
-#	11/15/2013  -	v1.3 Added x-ms-version in BlockBlob upload for 
-#			stricter adherence to protocol
+#	11/10/2013  -	v1.1 Initial release (beta)
 #
 #------------------------------------------------------------------------
 import os
@@ -22,6 +23,7 @@ import sys
 
 import requests
 from Crypto.Cipher import AES
+import json
 
 class IronBoxRESTClient():
 
@@ -363,7 +365,7 @@ class IronBoxRESTClient():
     #	Checks in a checked out entity container blob
     #
     #	Inputs:	
-    #	    ContainerID = 64-bit container ID
+    #	    ContainerID = 64-bit integer container ID
     #	    BlobIDName = ID of the blob being checked in
     #	    BlobSizeBytes = Reports the size of the blob in bytes
     #	    CheckInToken = Check in token
@@ -388,6 +390,58 @@ class IronBoxRESTClient():
 
         return r.json()	
 
+
+    #-------------------------------------------------------------
+    #	Returns information about the blobs in the given container 
+    #	that are in a given state.  For example, if 
+    #	a Ready state is provided, then returns the container blobs
+    #	that are in a ready state. The return object is a list of 
+    #	double-tuples where 0=BlobID and 1=BlobName.
+    #
+    #	Inputs:
+    #	    ContainerID = 64-bit integer container ID
+    #	    BlobState = 32-bit integer 
+    #		0 = Blob created 
+    #		1 = Entity is uploading
+    #		2 = Ready
+    #		3 = Checked out
+    #		4 = Entity is modifying 
+    #		5 = None 
+    #
+    #-------------------------------------------------------------
+    def GetContainerBlobInfoListByState(self,ContainerID, BlobState):
+	
+	post_data = {
+            'Entity': self.Entity,
+            'EntityType': self.EntityType,
+            'EntityPassword':self.EntityPassword,
+            'ContainerID': ContainerID,
+            'BlobState': BlobState
+        }
+        url = self.APIServerURL + "GetContainerBlobInfoListByState"
+
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+
+        if r.status_code != requests.codes.ok:
+            return None
+
+        # Get the Json response
+        response = r.json()
+        if not response:
+            return None
+
+	# Start parsing the Json response into a list of double-tuples
+	# where 0 = BlobID and 1 = BlobName
+	result = list()
+	jsonData = response["BlobInfoArray"]
+	for item in jsonData: 
+	    # Create a tuple [BlobID,BlobName] and add to our 
+	    # result list
+	    t = item.get("BlobID"), item.get("BlobName")
+	    result.append(t)
+	
+	# Done, return result list of double-tuples
+	return result
 
 # Regardless of key size, AES always uses a block size of 16
 #BS = 16
