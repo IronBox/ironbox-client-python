@@ -1,19 +1,27 @@
 #------------------------------------------------------------------------
 #   IronBox REST API Python wrapper
-#   Version: 1.4 (12/04/2013)
+#   Version: 1.5 (12/04/2013)
 #   Author: KevinLam@goironbox.com
 #   Website: www.goironbox.com
 #   Dependencies:
 #	pip install -r requirements.txt
 #
 #   Change History:
+#   ---------------
+#	12/04/2013  -	v1.5 Added RemoveEntityContainerBlob, 
+#			DownloadBlobFromContainer (helper method),
+#			ReadEntityContainerBlob
+#			
 #	12/04/2013  -	v1.4 Added GetContainerBlobInfoListByState
+#
 #	11/15/2013  -	v1.3 Added x-ms-version in BlockBlob upload for 
 #			stricter adherence to protocol
+#
 #	11/12/2013  -	v1.2 Removed dependency on M2Crypto, Urllib, 
 #			Urllib2, openssl and Json.  Added pycrypto.
 #			Using BlockBlob and re-assembling on the server
 #			as it's more efficient than PageBlobs
+#
 #	11/10/2013  -	v1.1 Initial release (beta)
 #
 #------------------------------------------------------------------------
@@ -71,9 +79,7 @@ class IronBoxRESTClient():
         #   Test to make sure that the API server is accessible
         #----------------------------
         if not self.Ping():
-            self.console("IronBox API server is not responding, or is not accessible from this network location")
             raise Exception("IronBox API server is not accessible from this network location")
-
         self.console_log("IronBox API is up, starting transfer")
 
         #----------------------------
@@ -83,8 +89,7 @@ class IronBoxRESTClient():
         IronBoxKeyData = self.ContainerKeyData(ContainerID)
         if not IronBoxKeyData:
             raise Exception("Unable to retrieve container key data")
-
-        self.console_log("Retrieving container symmetric key data")
+        self.console_log("Retrieved container symmetric key data")
 
         #----------------------------
         #   Step 3:
@@ -140,7 +145,80 @@ class IronBoxRESTClient():
         os.remove(EncryptedFilePath)
         return True
 
-    
+    #-------------------------------------------------------------
+    #	Downloads a blob from an IronBox container
+    #	
+    #	In:
+    #	    ContainerID = IronBox container ID, 64-bit integer
+    #	    BlobID = ID of blob to download 
+    #	    DestFilePath = Path of the file to save the decrypted 
+    #		blob to. 
+    #
+    #	Returns:
+    #	    Returns True on success, False otherwise
+    #-------------------------------------------------------------
+    def DownloadBlobFromContainer(self,ContainerID, BlobID, DestFilePath):
+
+        #---------------------------------------------------------
+        #   Step 1:
+        #   Test to make sure that the API server is accessible
+        #---------------------------------------------------------
+        if not self.Ping():
+            raise Exception("IronBox API server is not accessible from this network location")
+        self.console_log("IronBox API is up, starting download of target file %s" % DestFilePath)
+
+        #---------------------------------------------------------
+        #   Step 2:
+        #   Get the container key data
+        #---------------------------------------------------------
+        IronBoxKeyData = self.ContainerKeyData(ContainerID)
+        if not IronBoxKeyData:
+            raise Exception("Unable to retrieve container key data")
+        self.console_log("Retrieved container symmetric key data")
+
+        #---------------------------------------------------------
+        #   Step 3:
+        #   Download the blob read data, specifically we need 
+	#   a shared access signature URI to the encrypted
+	#   blob 
+        #---------------------------------------------------------
+	ReadBlobData = self.ReadEntityContainerBlob(ContainerID,BlobID)
+	if not ReadBlobData:
+	    raise Exception("Unable to read container blob download data")
+	self.console_log("Retrieved blob download Shared Access Signature URI")
+	EncryptedFilePath = DestFilePath + ".encrypted" 	
+	r = requests.get(ReadBlobData.SharedAccessSignatureUri, stream=True)
+	numBytesDownloaded = 0
+	with open(EncryptedFilePath, 'wb') as f:
+	    for chunk in r.iter_content(chunk_size=1024):
+		if chunk:
+		    f.write(chunk)
+		    numBytesDownloaded = numBytesDownloaded + len(chunk)
+		    # Show progress if needed
+		    if self.Verbose is True:
+			sys.stdout.write("\rDownloaded %d encrypted byte(s) to %s" % (numBytesDownloaded,EncryptedFilePath))
+			sys.stdout.flush()
+		    f.flush()
+	    
+	    # If verbose, we need to print out a new line
+	    if self.Verbose:
+		print
+        
+	#---------------------------------------------------------
+        #   Step 4:
+	#   Decrypt the downloaded blob
+        #---------------------------------------------------------
+	self.console_log("Decrypting encrypted blob")
+	IronBoxKeyData.Decrypt_File(EncryptedFilePath,DestFilePath)
+
+	#---------------------------------------------------------
+        #   Step 5:
+	#   Done, clean up 
+        #---------------------------------------------------------
+	self.console_log("Done, cleaning up %s" % EncryptedFilePath)
+        os.remove(EncryptedFilePath)
+	return True
+
     #-------------------------------------------------------------
     #	Uploads an encrypted file to cloud storage using the 
     #	shared access signature provided.  This function uploads
@@ -443,6 +521,81 @@ class IronBoxRESTClient():
 	# Done, return result list of double-tuples
 	return result
 
+    #-------------------------------------------------------------
+    #	Retrieves the storage information required to read 
+    #	encrypted entity container blobs directly from storage. 
+    #	Returned information will include storage endpoint URL, 
+    #	container name and a shared access signature that grants 
+    #	limited temporary access to back-end storage.
+    #	
+    #	Callers can then use the URL specified in the 
+    #	SharedAccessSignatureUri response to directly read the 
+    #	encrypted blob from storage.
+    #
+    #	Once downloaded, callers must then decrypt the encrypted 
+    #	blob using the information provided from the call to 
+    #	ContainerKeyData. 
+    #
+    #-------------------------------------------------------------
+    def ReadEntityContainerBlob(self,ContainerID, BlobID):
+	
+	post_data = {
+            'Entity': self.Entity,
+            'EntityType': self.EntityType,
+            'EntityPassword':self.EntityPassword,
+            'ContainerID': ContainerID,
+            'BlobIDName': BlobID
+        }
+        url = self.APIServerURL + "ReadEntityContainerBlob"
+
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+
+        if r.status_code != requests.codes.ok:
+            return None
+
+        # Parse the response, get container key, IV and strength
+        response = r.json()
+        if not response:
+            return None
+
+	# Parse response into an IronBoxBlobReadData object
+        BlobReadData = IronBoxBlobReadData() 
+	BlobReadData.ContainerStorageName = response.get('ContainerStorageName')
+	BlobReadData.SharedAccessSignature = response.get('SharedAccessSignature')
+	BlobReadData.SharedAccessSignatureUri = response.get('SharedAccessSignatureUri')
+	BlobReadData.StorageType = response.get('StorageType')
+	BlobReadData.StorageUri = response.get('StorageUri')
+
+	#Done, return the blob read data
+	return BlobReadData
+
+    #-------------------------------------------------------------
+    #	Removes a blob from an entity container, returns true on 
+    #	success false otherwise.	
+    #
+    #	Inputs:	
+    #	    ContainerID = 64-bit integer container ID
+    #	    BlobID = ID of the blob being checked in
+    # 
+    #-------------------------------------------------------------
+    def RemoveEntityContainerBlob(self,ContainerID, BlobID):
+	post_data = {
+            'Entity': self.Entity,
+            'EntityType': self.EntityType,
+            'EntityPassword':self.EntityPassword,
+            'ContainerID': ContainerID,
+            'BlobIDName': BlobID
+        }
+        url = self.APIServerURL + "RemoveEntityContainerBlob"
+
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+
+        if r.status_code != requests.codes.ok:
+            return None
+
+        return r.json()	
+
+
 # Regardless of key size, AES always uses a block size of 16
 #BS = 16
 BS = AES.block_size
@@ -506,7 +659,6 @@ class IronBoxKeyData():
     #-------------------------------------------------------------
     def Decrypt_File(self, in_filename, out_filename):
 	try:
-
 	    d = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
 	    if not os.path.exists(in_filename):
 		return False
@@ -543,4 +695,22 @@ class IronBoxBlobCheckOutData():
 	print "StorageUri: %s" % self.StorageUri 
 	print "StorageType: %d" % self.StorageType 
 	print "ContainerStorageName: %s" % self.ContainerStorageName 
-    
+
+
+#------------------------------------------------------------------
+#   Class to hold IronBox blob read data
+#------------------------------------------------------------------
+class IronBoxBlobReadData():
+
+    ContainerStorageName = ""
+    SharedAccessSignature = ""
+    SharedAccessSignatureUri = ""    
+    StorageType = ""
+    StorageUri = ""
+
+    def DebugPrintProps(self):
+	print "ContainerStorageName: %s" % self.ContainerStorageName
+	print "SharedAccessSignature: %s" % self.SharedAccessSignature
+	print "SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri
+	print "StorageType: %s" % self.StorageType
+	print "StorageUri: %s" % self.StorageUri
