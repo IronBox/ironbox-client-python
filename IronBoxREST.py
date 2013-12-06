@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------
 #   IronBox REST API Python wrapper
-#   Version: 1.5 (12/04/2013)
+#   Version: 1.6 (12/06/2013)
 #   Author: KevinLam@goironbox.com
 #   Website: www.goironbox.com
 #   Dependencies:
@@ -8,6 +8,9 @@
 #
 #   Change History:
 #   ---------------
+#	12/06/2013  -	v1.6 Added GetContextSetting and 
+#			GetContainerInfoListByContext methods 
+#
 #	12/04/2013  -	v1.5 Added RemoveEntityContainerBlob, 
 #			DownloadBlobFromContainer (helper method),
 #			ReadEntityContainerBlob
@@ -594,6 +597,73 @@ class IronBoxRESTClient():
             return None
 
         return r.json()	
+
+
+    #-------------------------------------------------------------
+    #	Gets a setting for a given context. For example, using this
+    #	call you can retrieve certain properties of the context
+    #	secure.goironcloud.com, such as company name, company logo
+    #	URL, etc. The entity making this request must already be
+    #	a member of the context.
+    #-------------------------------------------------------------
+    def GetContextSetting(self, Context, ContextSetting):
+
+	post_data = {
+            'Entity': self.Entity,
+            'EntityType': self.EntityType,
+            'EntityPassword':self.EntityPassword,
+            'Context': Context,
+            'ContextSetting': ContextSetting 
+        }
+        url = self.APIServerURL + "GetContextSetting"
+
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+
+        if r.status_code != requests.codes.ok:
+            return None
+
+        return r.json()	
+	
+
+    #-------------------------------------------------------------
+    #	Returns the IDs and names of a container for an entity
+    #	in a given context (e.g. secure.goironcloud.com or 
+    #	demo.goironcloud.com) and by given container type (always
+    #	use 5 for now).
+    #-------------------------------------------------------------
+    def GetContainerInfoListByContext(self,Context,ContainerType):
+	
+	post_data = {
+            'Entity': self.Entity,
+            'EntityType': self.EntityType,
+            'EntityPassword':self.EntityPassword,
+            'Context': Context,
+            'ContainerType': ContainerType 
+        }
+        url = self.APIServerURL + "GetContainerInfoListByContext"
+
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+
+        if r.status_code != requests.codes.ok:
+            return None
+
+        # Get the Json response
+        response = r.json()
+        if not response:
+            return None
+
+	# Start parsing the Json response into a list of double-tuples
+	# where 0 = ContainerID and 1 = ContainerName
+	result = list()
+	jsonData = response["ContainerInfoArray"]
+	for item in jsonData: 
+	    # Create a tuple [ContainerID,ContainerName] and add to our 
+	    # result list
+	    t = item.get("ContainerID"), item.get("ContainerName")
+	    result.append(t)
+	
+	# Done, return result list of double-tuples
+	return result
 
 
 # Regardless of key size, AES always uses a block size of 16
