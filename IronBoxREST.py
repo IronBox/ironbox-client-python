@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------
 #   IronBox REST API Python wrapper
-#   Version: 1.6 (12/06/2013)
+#   Version: 1.7 (12/16/2013)
 #   Author: KevinLam@goironbox.com
 #   Website: www.goironbox.com
 #   Dependencies:
@@ -8,6 +8,9 @@
 #
 #   Change History:
 #   ---------------
+#	12/16/2013  -	v1.7 Added CreateEntitySFTContainer and 
+#			RemoveEntityContainer
+#
 #	12/06/2013  -	v1.6 Added GetContextSetting and 
 #			GetContainerInfoListByContext methods 
 #
@@ -666,6 +669,67 @@ class IronBoxRESTClient():
 	return result
 
 
+    #-------------------------------------------------------------
+    #	Creates an IronBox entity secure file transfer (SFT)
+    #	container with the given container configuration information
+    #	and for the given context.  The caller must already be a 
+    #	member of the given context and must have permissions to 
+    #	create SFT containers.
+    #-------------------------------------------------------------
+    def CreateEntitySFTContainer(self, Context, ContainerConfig):
+
+	post_data = {
+            'Entity': self.Entity,
+            'EntityType': self.EntityType,
+            'EntityPassword':self.EntityPassword,
+            'Context': Context,
+            'Name': ContainerConfig.Name,
+	    'Description': ContainerConfig.Description
+        }
+
+        url = self.APIServerURL + "CreateEntitySFTContainer"
+
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+
+        if r.status_code != requests.codes.ok:
+            return None
+	
+        # Parse the response, get container key, IV and strength
+        response = r.json()
+        if not response:
+            return None
+
+	# Parse response into an IronBoxSFTContainerData object
+        ResultContainerData = IronBoxSFTContainerConfig() 
+	ResultContainerData.Name = response.get('Name');	
+	ResultContainerData.Description = response.get('Description');	
+	ResultContainerData.ContainerID = response.get('ContainerID');	
+	ResultContainerData.FriendlyID = response.get('FriendlyID');	
+
+	# Done, return our parsed container data object
+        return ResultContainerData	
+
+    #-------------------------------------------------------------
+    #	Removes an entity container, the caller must be the owner
+    #	of the entity container. Returns true on success, false 
+    #	otherwise.
+    #-------------------------------------------------------------
+    def RemoveEntityContainer(self,ContainerID):
+	post_data = {
+            'Entity': self.Entity,
+            'EntityType': self.EntityType,
+            'EntityPassword':self.EntityPassword,
+            'ContainerID': ContainerID
+        }
+        url = self.APIServerURL + "RemoveEntityContainer"
+
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+
+        if r.status_code != requests.codes.ok:
+            return None
+
+        return r.json()	
+
 # Regardless of key size, AES always uses a block size of 16
 #BS = 16
 BS = AES.block_size
@@ -784,3 +848,19 @@ class IronBoxBlobReadData():
 	print "SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri
 	print "StorageType: %s" % self.StorageType
 	print "StorageUri: %s" % self.StorageUri
+
+#------------------------------------------------------------------
+#   Class to hold IronBox entity SFT container information
+#------------------------------------------------------------------
+class IronBoxSFTContainerConfig():
+
+    Name = ""
+    Description = ""
+    ContainerID = -1 
+    FriendlyID = ""
+
+    def DebugPrintProps(self):
+	print "Name: %s" % self.Name
+	print "Description: %s" % self.Description
+	print "ContainerID: %d" % self.ContainerID
+	print "FriendlyID: %s" % self.FriendlyID
