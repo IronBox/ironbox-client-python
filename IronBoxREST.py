@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------
 #   IronBox REST API Python wrapper
-#   Version: 1.7 (12/16/2013)
+#   Version: 1.8 (01/02/2014)
 #   Author: KevinLam@goironbox.com
 #   Website: www.goironbox.com
 #   Dependencies:
@@ -8,6 +8,12 @@
 #
 #   Change History:
 #   ---------------
+#	01/02/2014  -	v1.8 Corrected issue with Encrypt_File method
+#			in ContainerKeyData class. Final padding check
+#			should be based on the read block size, not 
+#			AES block size, was only an issue for files < 1024
+#			and multiple of 16.
+# 
 #	12/16/2013  -	v1.7 Added CreateEntitySFTContainer and 
 #			RemoveEntityContainer
 #
@@ -761,6 +767,9 @@ class IronBoxKeyData():
     #	    True on success, false otherwise
     #-------------------------------------------------------------
     def Encrypt_File(self, in_filename, out_filename):
+	
+	readBlockSize = 1024
+    
 	try:
 	    e = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
 	    if not os.path.exists(in_filename):
@@ -768,18 +777,18 @@ class IronBoxKeyData():
 	    with open(in_filename, 'rb') as infile:
 		with open(out_filename, "wb") as outfile:
 		    while True:
-			buf = infile.read(1024)
+			buf = infile.read(readBlockSize)
 			if not buf:
 			    break
-			if len(buf) < 1024:
+			if len(buf) < readBlockSize:
 			    buf = pad(buf)
 			outfile.write(e.encrypt(buf))
 		    
-		    # if the in_file length is a multiple of the AES block size,
+		    # if the in_file length is a multiple of the read block size,
 		    # then there will be no padding, so we need to add a padded 
 		    # block otherwise the cipher has no way of knowing where the 
 		    # end of the cipher text is 
-		    if (os.path.getsize(in_filename) % BS) == 0:
+		    if (os.path.getsize(in_filename) % readBlockSize) == 0:
 			buf = pad(buf)
 			outfile.write(e.encrypt(buf))
 	    return True
