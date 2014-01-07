@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------
 #   IronBox REST API Python wrapper
-#   Version: 1.8 (01/02/2014)
+#   Version: 1.9 (01/06/2014)
 #   Author: KevinLam@goironbox.com
 #   Website: www.goironbox.com
 #   Dependencies:
@@ -8,6 +8,11 @@
 #
 #   Change History:
 #   ---------------
+#	01/06/2014  -	v1.9 Added verifySSLCert flag, which allows callers
+#			to control if they want to validate SSL certificates
+#			or not when connecting to API servers or not, default
+#			on.
+#
 #	01/02/2014  -	v1.8 Corrected issue with Encrypt_File method
 #			in ContainerKeyData class. Final padding check
 #			should be based on the read block size, not 
@@ -47,7 +52,7 @@ import json
 
 class IronBoxRESTClient():
 
-    def __init__(self, entity, entity_password, entity_type=0, version='latest', content_format='application/json', verbose=False):
+    def __init__(self, entity, entity_password, entity_type=0, version='latest', content_format='application/json', verbose=False, verifySSLCert=True):
 	# Actual entity identifier, this can be email address,
 	# name identifier (mostly internal use only) or an entity
 	# ID which is a 64-bit integer that identifies the specific 
@@ -69,6 +74,10 @@ class IronBoxRESTClient():
 
 	# Flag that indicates whether or not to be verbose or not
 	self.Verbose = verbose 
+
+	# Verify SSL certificate flag
+	self.VerifySSLCert = verifySSLCert
+
 	return
 
     #*************************************************************
@@ -199,7 +208,7 @@ class IronBoxRESTClient():
 	    raise Exception("Unable to read container blob download data")
 	self.console_log("Retrieved blob download Shared Access Signature URI")
 	EncryptedFilePath = DestFilePath + ".encrypted" 	
-	r = requests.get(ReadBlobData.SharedAccessSignatureUri, stream=True)
+	r = requests.get(ReadBlobData.SharedAccessSignatureUri, stream=True, verify=self.VerifySSLCert)
 	numBytesDownloaded = 0
 	with open(EncryptedFilePath, 'wb') as f:
 	    for chunk in r.iter_content(chunk_size=1024):
@@ -278,7 +287,7 @@ class IronBoxRESTClient():
 		blockSASUri = sasUriBlockPrefix + blockID.encode('base64','strict')
 
 		# Create a blob block
-		r = requests.put(blockSASUri, data=buf, headers=headers)		
+		r = requests.put(blockSASUri, data=buf, headers=headers, verify=self.VerifySSLCert)		
 		if r.status_code != requests.codes.created:
 		    return False	
 
@@ -311,7 +320,7 @@ class IronBoxRESTClient():
 	    # Indicate blocks to commit per 2012-02-12 version PUT block list specifications 
 	    blockListBody += "<Latest>%s</Latest>" % encodedBlockID 
 	commitBody = '<?xml version="1.0" encoding="utf-8"?><BlockList>%s</BlockList>' % blockListBody
-	commitResponse = requests.put(commitBlockSASUrl, data=commitBody, headers=commitheaders)		
+	commitResponse = requests.put(commitBlockSASUrl, data=commitBody, headers=commitheaders, verify=self.VerifySSLCert)		
 	return commitResponse.status_code == requests.codes.created
 		 
 	
@@ -335,7 +344,7 @@ class IronBoxRESTClient():
     #	A boolean value if 
     #-------------------------------------------------------------
     def Ping(self):
-	r = requests.get(self.APIServerURL + 'Ping')
+	r = requests.get(self.APIServerURL + 'Ping', verify=self.VerifySSLCert)
         if r.status_code == requests.codes.ok:
             return r.json()
         return False
@@ -357,7 +366,7 @@ class IronBoxRESTClient():
             'ContainerID': ContainerID
         }
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -396,7 +405,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "CreateEntityContainerBlob"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -425,7 +434,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "CheckOutEntityContainerBlob"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -473,7 +482,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "CheckInEntityContainerBlob"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -510,7 +519,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "GetContainerBlobInfoListByState"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -560,7 +569,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "ReadEntityContainerBlob"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -600,7 +609,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "RemoveEntityContainerBlob"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -626,7 +635,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "GetContextSetting"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)	
 
         if r.status_code != requests.codes.ok:
             return None
@@ -651,7 +660,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "GetContainerInfoListByContext"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -695,7 +704,7 @@ class IronBoxRESTClient():
 
         url = self.APIServerURL + "CreateEntitySFTContainer"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
@@ -729,7 +738,7 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "RemoveEntityContainer"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat})
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
 
         if r.status_code != requests.codes.ok:
             return None
