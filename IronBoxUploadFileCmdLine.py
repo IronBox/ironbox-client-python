@@ -43,14 +43,14 @@ def main():
     IronBoxFileName = path.basename(InFile) 
  
     #-----------------------------------------------   
-    #	Create an instance of the IronBox REST class
+    #    Create an instance of the IronBox REST class
     #-----------------------------------------------   
     IronBoxRESTObj = IronBoxRESTClient(IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True)
 
     #-----------------------------------------------   
-    #	Upload the file to IronBox
-    #	Duplicate file names will automatically
-    #	get renamed
+    #    Upload the file to IronBox
+    #    Duplicate file names will automatically
+    #    get renamed
     #-----------------------------------------------   
     IronBoxRESTObj.UploadFileToContainer(ContainerID, InFile, IronBoxFileName)
 

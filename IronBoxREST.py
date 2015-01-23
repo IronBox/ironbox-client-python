@@ -4,42 +4,42 @@
 #   Author: KevinLam@goironbox.com
 #   Website: www.goironbox.com
 #   Dependencies:
-#	pip install -r requirements.txt
+#    pip install -r requirements.txt
 #
 #   Change History:
 #   ---------------
-#	01/06/2014  -	v1.9 Added verifySSLCert flag, which allows callers
-#			to control if they want to validate SSL certificates
-#			or not when connecting to API servers or not, default
-#			on.
+#    01/06/2014  -    v1.9 Added verifySSLCert flag, which allows callers
+#                     to control if they want to validate SSL certificates
+#                     or not when connecting to API servers or not, default
+#                     on.
 #
-#	01/02/2014  -	v1.8 Corrected issue with Encrypt_File method
-#			in ContainerKeyData class. Final padding check
-#			should be based on the read block size, not 
-#			AES block size, was only an issue for files < 1024
-#			and multiple of 16.
+#    01/02/2014  -    v1.8 Corrected issue with Encrypt_File method
+#                     in ContainerKeyData class. Final padding check
+#                     should be based on the read block size, not 
+#                     AES block size, was only an issue for files < 1024
+#                     and multiple of 16.
 # 
-#	12/16/2013  -	v1.7 Added CreateEntitySFTContainer and 
-#			RemoveEntityContainer
+#    12/16/2013  -    v1.7 Added CreateEntitySFTContainer and 
+#                     RemoveEntityContainer
 #
-#	12/06/2013  -	v1.6 Added GetContextSetting and 
-#			GetContainerInfoListByContext methods 
+#    12/06/2013  -    v1.6 Added GetContextSetting and 
+#                     GetContainerInfoListByContext methods 
 #
-#	12/04/2013  -	v1.5 Added RemoveEntityContainerBlob, 
-#			DownloadBlobFromContainer (helper method),
-#			ReadEntityContainerBlob
-#			
-#	12/04/2013  -	v1.4 Added GetContainerBlobInfoListByState
+#    12/04/2013  -    v1.5 Added RemoveEntityContainerBlob, 
+#                     DownloadBlobFromContainer (helper method),
+#                     ReadEntityContainerBlob
+#            
+#    12/04/2013  -    v1.4 Added GetContainerBlobInfoListByState
 #
-#	11/15/2013  -	v1.3 Added x-ms-version in BlockBlob upload for 
-#			stricter adherence to protocol
+#    11/15/2013  -    v1.3 Added x-ms-version in BlockBlob upload for 
+#                     stricter adherence to protocol
 #
-#	11/12/2013  -	v1.2 Removed dependency on M2Crypto, Urllib, 
-#			Urllib2, openssl and Json.  Added pycrypto.
-#			Using BlockBlob and re-assembling on the server
-#			as it's more efficient than PageBlobs
+#    11/12/2013  -    v1.2 Removed dependency on M2Crypto, Urllib, 
+#                     Urllib2, openssl and Json.  Added pycrypto.
+#                     Using BlockBlob and re-assembling on the server
+#                     as it's more efficient than PageBlobs
 #
-#	11/10/2013  -	v1.1 Initial release (beta)
+#    11/10/2013  -    v1.1 Initial release (beta)
 #
 #------------------------------------------------------------------------
 import os
@@ -53,49 +53,49 @@ import json
 class IronBoxRESTClient():
 
     def __init__(self, entity, entity_password, entity_type=0, version='latest', content_format='application/json', verbose=False, verifySSLCert=True):
-	# Actual entity identifier, this can be email address,
-	# name identifier (mostly internal use only) or an entity
-	# ID which is a 64-bit integer that identifies the specific 
-	# user
-	self.Entity = entity 
+        # Actual entity identifier, this can be email address,
+        # name identifier (mostly internal use only) or an entity
+        # ID which is a 64-bit integer that identifies the specific 
+        # user
+        self.Entity = entity 
 
-	# Entity password
-	self.EntityPassword = entity_password 
+        # Entity password
+        self.EntityPassword = entity_password 
 
-	# Entity type, 0 = email address, 1 = name identifier, 2 = entity ID
-	self.EntityType = entity_type   
+        # Entity type, 0 = email address, 1 = name identifier, 2 = entity ID
+        self.EntityType = entity_type   
 
-	# API server URL, default however can be changed
-	# to test servers
-	self.APIServerURL = "https://api.goironcloud.com/%s/" % version
+        # API server URL, default however can be changed
+        # to test servers
+        self.APIServerURL = "https://api.goironcloud.com/%s/" % version
 
-	# Accept format
-	self.ContentFormat = content_format 
+        # Accept format
+        self.ContentFormat = content_format 
 
-	# Flag that indicates whether or not to be verbose or not
-	self.Verbose = verbose 
+        # Flag that indicates whether or not to be verbose or not
+        self.Verbose = verbose 
 
-	# Verify SSL certificate flag
-	self.VerifySSLCert = verifySSLCert
+        # Verify SSL certificate flag
+        self.VerifySSLCert = verifySSLCert
 
-	return
+        return
 
     #*************************************************************
-    #	IronBox REST Client helper functions
+    #    IronBox REST Client helper functions
     #*************************************************************
 
     #-------------------------------------------------------------
-    #	Uploads a given file to an IronBox container
-    #	
-    #	In:
-    #	    ContainerID = IronBox container ID, 64-bit integer
-    #	    FilePath = local file path of file to upload
-    #	    BlobName = name of the file to use on cloud storage
-    #	Returns:
-    #	    Returns True on success, False otherwise
+    #    Uploads a given file to an IronBox container
+    #    
+    #    In:
+    #        ContainerID = IronBox container ID, 64-bit integer
+    #        FilePath = local file path of file to upload
+    #        BlobName = name of the file to use on cloud storage
+    #    Returns:
+    #        Returns True on success, False otherwise
     #-------------------------------------------------------------
     def UploadFileToContainer(self,ContainerID, FilePath, BlobName):
-	#----------------------------
+        #----------------------------
         #   Step 1:
         #   Test to make sure that the API server is accessible
         #----------------------------
@@ -149,8 +149,8 @@ class IronBoxRESTClient():
         #   more advanced.
         #----------------------------
         self.console_log("Uploading encrypted copy of " + FilePath)
-	if not self.UploadBlobWithSharedAccessSignatureUri(EncryptedFilePath,CheckOutData.SharedAccessSignatureUri):
-	    raise Exception("Unable to upload encrypted file")
+        if not self.UploadBlobWithSharedAccessSignatureUri(EncryptedFilePath,CheckOutData.SharedAccessSignatureUri):
+            raise Exception("Unable to upload encrypted file")
 
         #----------------------------
         #   Step 6:
@@ -167,16 +167,16 @@ class IronBoxRESTClient():
         return True
 
     #-------------------------------------------------------------
-    #	Downloads a blob from an IronBox container
-    #	
-    #	In:
-    #	    ContainerID = IronBox container ID, 64-bit integer
-    #	    BlobID = ID of blob to download 
-    #	    DestFilePath = Path of the file to save the decrypted 
-    #		blob to. 
+    #    Downloads a blob from an IronBox container
+    #    
+    #    In:
+    #        ContainerID = IronBox container ID, 64-bit integer
+    #        BlobID = ID of blob to download 
+    #        DestFilePath = Path of the file to save the decrypted 
+    #        blob to. 
     #
-    #	Returns:
-    #	    Returns True on success, False otherwise
+    #    Returns:
+    #        Returns True on success, False otherwise
     #-------------------------------------------------------------
     def DownloadBlobFromContainer(self,ContainerID, BlobID, DestFilePath):
 
@@ -200,164 +200,164 @@ class IronBoxRESTClient():
         #---------------------------------------------------------
         #   Step 3:
         #   Download the blob read data, specifically we need 
-	#   a shared access signature URI to the encrypted
-	#   blob 
+        #   a shared access signature URI to the encrypted
+        #   blob 
         #---------------------------------------------------------
-	ReadBlobData = self.ReadEntityContainerBlob(ContainerID,BlobID)
-	if not ReadBlobData:
-	    raise Exception("Unable to read container blob download data")
-	self.console_log("Retrieved blob download Shared Access Signature URI")
-	EncryptedFilePath = DestFilePath + ".encrypted" 	
-	r = requests.get(ReadBlobData.SharedAccessSignatureUri, stream=True, verify=self.VerifySSLCert)
-	numBytesDownloaded = 0
-	with open(EncryptedFilePath, 'wb') as f:
-	    for chunk in r.iter_content(chunk_size=1024):
-		if chunk:
-		    f.write(chunk)
-		    numBytesDownloaded = numBytesDownloaded + len(chunk)
-		    # Show progress if needed
-		    if self.Verbose is True:
-			sys.stdout.write("\rDownloaded %d encrypted byte(s) to %s" % (numBytesDownloaded,EncryptedFilePath))
-			sys.stdout.flush()
-		    f.flush()
-	    
-	    # If verbose, we need to print out a new line
-	    if self.Verbose:
-		print
+        ReadBlobData = self.ReadEntityContainerBlob(ContainerID,BlobID)
+        if not ReadBlobData:
+            raise Exception("Unable to read container blob download data")
+        self.console_log("Retrieved blob download Shared Access Signature URI")
+        EncryptedFilePath = DestFilePath + ".encrypted"     
+        r = requests.get(ReadBlobData.SharedAccessSignatureUri, stream=True, verify=self.VerifySSLCert)
+        numBytesDownloaded = 0
+        with open(EncryptedFilePath, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+                    numBytesDownloaded = numBytesDownloaded + len(chunk)
+                    # Show progress if needed
+                    if self.Verbose is True:
+                        sys.stdout.write("\rDownloaded %d encrypted byte(s) to %s" % (numBytesDownloaded,EncryptedFilePath))
+                        sys.stdout.flush()
+                    f.flush()
         
-	#---------------------------------------------------------
+            # If verbose, we need to print out a new line
+            if self.Verbose:
+                print
+        
+        #---------------------------------------------------------
         #   Step 4:
-	#   Decrypt the downloaded blob
+        #   Decrypt the downloaded blob
         #---------------------------------------------------------
-	self.console_log("Decrypting encrypted blob")
-	IronBoxKeyData.Decrypt_File(EncryptedFilePath,DestFilePath)
+        self.console_log("Decrypting encrypted blob")
+        IronBoxKeyData.Decrypt_File(EncryptedFilePath,DestFilePath)
 
-	#---------------------------------------------------------
-        #   Step 5:
-	#   Done, clean up 
         #---------------------------------------------------------
-	self.console_log("Done, cleaning up %s" % EncryptedFilePath)
+        #   Step 5:
+        #   Done, clean up 
+        #---------------------------------------------------------
+        self.console_log("Done, cleaning up %s" % EncryptedFilePath)
         os.remove(EncryptedFilePath)
-	return True
+        return True
 
     #-------------------------------------------------------------
-    #	Uploads an encrypted file to cloud storage using the 
-    #	shared access signature provided.  This function uploads
-    #	blocks in 4 MB blocks with max 50k blocks, meaning that 
-    #	there is a 200 GB max for any file uploaded.
-    #	
-    #	Returns:
-    #	    Returns true on success, false otherwise
+    #    Uploads an encrypted file to cloud storage using the 
+    #    shared access signature provided.  This function uploads
+    #    blocks in 4 MB blocks with max 50k blocks, meaning that 
+    #    there is a 200 GB max for any file uploaded.
+    #    
+    #    Returns:
+    #        Returns true on success, false otherwise
     #-------------------------------------------------------------
     def UploadBlobWithSharedAccessSignatureUri(self, in_filename, sasUri):
 
-	# Validate file
-	if not os.path.exists(in_filename):
-	    return False
+        # Validate file
+        if not os.path.exists(in_filename):
+            return False
 
-	# Cloud storage only allows blocks of max 4MB, and max 50k blocks 
-	# so 200 GB max	per file
-	blockSizeMB = 4	
-	blockSizeBytes = blockSizeMB * 1024 * 1024  
-	fileSize = os.path.getsize(in_filename)
-	self.console_log("Starting send in %dMB increments" % blockSizeMB)
+        # Cloud storage only allows blocks of max 4MB, and max 50k blocks 
+        # so 200 GB max    per file
+        blockSizeMB = 4    
+        blockSizeBytes = blockSizeMB * 1024 * 1024  
+        fileSize = os.path.getsize(in_filename)
+        self.console_log("Starting send in %dMB increments" % blockSizeMB)
 
-	# Send headers 
-	headers = {
+        # Send headers 
+        headers = {
             'content-type': 'application/octet-stream',
             'x-ms-blob-type' : 'BlockBlob',
-	    'x-ms-version' : '2012-02-12'   
-	}
+            'x-ms-version' : '2012-02-12'   
+        }
 
-	# Open handle to encrypted file and send it in blocks
-	sasUriBlockPrefix = sasUri + "&comp=block&blockid=" 
-	blockIDs = []
-	numBytesSent = 0	
-	i = 0
-	with open(in_filename,'rb') as infile:
-	    while True:
-		
-		buf = infile.read(blockSizeBytes)
-		if not buf:
-		    break;
+        # Open handle to encrypted file and send it in blocks
+        sasUriBlockPrefix = sasUri + "&comp=block&blockid=" 
+        blockIDs = []
+        numBytesSent = 0    
+        i = 0
+        with open(in_filename,'rb') as infile:
+            while True:
+        
+                buf = infile.read(blockSizeBytes)
+                if not buf:
+                    break;
 
-		# block IDs all have to be the same length, which was NOT
-		# documented by MSFT
-		blockID = "block"+"{0:08}".format(i)
-		blockSASUri = sasUriBlockPrefix + blockID.encode('base64','strict')
+                # block IDs all have to be the same length, which was NOT
+                # documented by MSFT
+                blockID = "block"+"{0:08}".format(i)
+                blockSASUri = sasUriBlockPrefix + blockID.encode('base64','strict')
 
-		# Create a blob block
-		r = requests.put(blockSASUri, data=buf, headers=headers, verify=self.VerifySSLCert)		
-		if r.status_code != requests.codes.created:
-		    return False	
+                # Create a blob block
+                r = requests.put(blockSASUri, data=buf, headers=headers, verify=self.VerifySSLCert)        
+                if r.status_code != requests.codes.created:
+                    return False    
 
-		# Block was successfuly sent, record its ID
-		blockIDs.append(blockID)
-		numBytesSent += len(buf)
-		i += 1	    
+                # Block was successfuly sent, record its ID
+                blockIDs.append(blockID)
+                numBytesSent += len(buf)
+                i += 1        
 
-		# Show progress if needed
-		if self.Verbose is True:
-		    done = int(50 * numBytesSent / fileSize)
-		    sys.stdout.write("\r[%s%s] %d byte(s) sent" % ('=' * done, ' ' * (50-done), numBytesSent) )    
-		    sys.stdout.flush()
-	
-	# We're done, so if verbose go to new line		    
-	if self.Verbose:
-	    print
+                # Show progress if needed
+                if self.Verbose is True:
+                    done = int(50 * numBytesSent / fileSize)
+                    sys.stdout.write("\r[%s%s] %d byte(s) sent" % ('=' * done, ' ' * (50-done), numBytesSent) )    
+                    sys.stdout.flush()
+    
+        # We're done, so if verbose go to new line            
+        if self.Verbose:
+            print
 
-	# Done sending blocks, so commit the blocks into a single one 
-	# do the final re-assembly on the storage server side
-	commitBlockSASUrl = sasUri + "&comp=blockList" 
-	commitheaders = {
+        # Done sending blocks, so commit the blocks into a single one 
+        # do the final re-assembly on the storage server side
+        commitBlockSASUrl = sasUri + "&comp=blockList" 
+        commitheaders = {
             'content-type': 'text/xml',
-	    'x-ms-version' : '2012-02-12'   
-	}
-	# build list of block ids as xml elements
-	blockListBody = ''
-	for x in blockIDs:
-	    encodedBlockID = x.encode('base64','strict').strip()
-	    # Indicate blocks to commit per 2012-02-12 version PUT block list specifications 
-	    blockListBody += "<Latest>%s</Latest>" % encodedBlockID 
-	commitBody = '<?xml version="1.0" encoding="utf-8"?><BlockList>%s</BlockList>' % blockListBody
-	commitResponse = requests.put(commitBlockSASUrl, data=commitBody, headers=commitheaders, verify=self.VerifySSLCert)		
-	return commitResponse.status_code == requests.codes.created
-		 
-	
+            'x-ms-version' : '2012-02-12'   
+        }
+        # build list of block ids as xml elements
+        blockListBody = ''
+        for x in blockIDs:
+            encodedBlockID = x.encode('base64','strict').strip()
+            # Indicate blocks to commit per 2012-02-12 version PUT block list specifications 
+            blockListBody += "<Latest>%s</Latest>" % encodedBlockID 
+        commitBody = '<?xml version="1.0" encoding="utf-8"?><BlockList>%s</BlockList>' % blockListBody
+        commitResponse = requests.put(commitBlockSASUrl, data=commitBody, headers=commitheaders, verify=self.VerifySSLCert)        
+        return commitResponse.status_code == requests.codes.created
+         
+    
     #-------------------------------------------------------------
-    #	Console logger
+    #    Console logger
     #-------------------------------------------------------------
     def console_log(self, m):
-	if self.Verbose is True:
-	    now = datetime.datetime.now()
-	    print str(now) + ": " + m
+        if self.Verbose is True:
+            now = datetime.datetime.now()
+            print (str(now) + ": " + m)
 
     #*************************************************************
-    #	CORE REST API FUNCTIONS 
+    #    CORE REST API FUNCTIONS 
     #*************************************************************
 
     #-------------------------------------------------------------
     #   Checks if the IronBox API server is responding
     #   In:
-    #	A URL string to the API server to check
+    #    A URL string to the API server to check
     #   Returns:
-    #	A boolean value if 
+    #    A boolean value if 
     #-------------------------------------------------------------
     def Ping(self):
-	r = requests.get(self.APIServerURL + 'Ping', verify=self.VerifySSLCert)
+        r = requests.get(self.APIServerURL + 'Ping', verify=self.VerifySSLCert)
         if r.status_code == requests.codes.ok:
             return r.json()
         return False
 
     #-------------------------------------------------------------
     #   Fetches an IronBox container key data
-    #	
-    #	Returns:
-    #	    Returns an IronBoxKeyData object, otherwise None
-    #	    on error
+    #    
+    #    Returns:
+    #        Returns an IronBoxKeyData object, otherwise None
+    #        on error
     #-------------------------------------------------------------
     def ContainerKeyData(self,ContainerID):
-	url = self.APIServerURL + "ContainerKeyData"
+        url = self.APIServerURL + "ContainerKeyData"
 
         post_data = {
             'Entity': self.Entity,
@@ -389,14 +389,14 @@ class IronBoxRESTClient():
 
   
     #-------------------------------------------------------------
-    #	Creates an IronBox blob in an existing container
-    #	
-    #	Returns:
-    #	    Returns the blob ID of the blob created, otherwise
-    #	    None on error  
+    #    Creates an IronBox blob in an existing container
+    #    
+    #    Returns:
+    #        Returns the blob ID of the blob created, otherwise
+    #        None on error  
     #-------------------------------------------------------------
     def CreateEntityContainerBlob(self,ContainerID, BlobName):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -413,19 +413,19 @@ class IronBoxRESTClient():
         return r.json()
 
     #-------------------------------------------------------------
-    #	Checks outs an entity container blob, so that the caller
-    #	can begin uploading the contents of the blob.
-    #	
-    #	Inputs:
-    #	    ContainerID = 64-bit integer container ID
-    #	    BlobIDName = ID of the blob being checked out
+    #    Checks outs an entity container blob, so that the caller
+    #    can begin uploading the contents of the blob.
+    #    
+    #    Inputs:
+    #        ContainerID = 64-bit integer container ID
+    #        BlobIDName = ID of the blob being checked out
     #
-    #	Returns:
-    #	    An IronBoxREST.IronBoxBlobCheckOutData object, 
-    #	    otherwise None on error
+    #    Returns:
+    #        An IronBoxREST.IronBoxBlobCheckOutData object, 
+    #        otherwise None on error
     #-------------------------------------------------------------
     def CheckOutEntityContainerBlob(self,ContainerID, BlobIDName):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -461,17 +461,17 @@ class IronBoxRESTClient():
         return CheckOutData
 
     #-------------------------------------------------------------
-    #	Checks in a checked out entity container blob
+    #    Checks in a checked out entity container blob
     #
-    #	Inputs:	
-    #	    ContainerID = 64-bit integer container ID
-    #	    BlobIDName = ID of the blob being checked in
-    #	    BlobSizeBytes = Reports the size of the blob in bytes
-    #	    CheckInToken = Check in token
+    #    Inputs:    
+    #        ContainerID = 64-bit integer container ID
+    #        BlobIDName = ID of the blob being checked in
+    #        BlobSizeBytes = Reports the size of the blob in bytes
+    #        CheckInToken = Check in token
     # 
     #-------------------------------------------------------------
     def CheckInEntityContainerBlob(self,ContainerID, BlobIDName, BlobSizeBytes, CheckInToken):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -487,30 +487,30 @@ class IronBoxRESTClient():
         if r.status_code != requests.codes.ok:
             return None
 
-        return r.json()	
+        return r.json()    
 
 
     #-------------------------------------------------------------
-    #	Returns information about the blobs in the given container 
-    #	that are in a given state.  For example, if 
-    #	a Ready state is provided, then returns the container blobs
-    #	that are in a ready state. The return object is a list of 
-    #	double-tuples where 0=BlobID and 1=BlobName.
+    #    Returns information about the blobs in the given container 
+    #    that are in a given state.  For example, if 
+    #    a Ready state is provided, then returns the container blobs
+    #    that are in a ready state. The return object is a list of 
+    #    double-tuples where 0=BlobID and 1=BlobName.
     #
-    #	Inputs:
-    #	    ContainerID = 64-bit integer container ID
-    #	    BlobState = 32-bit integer 
-    #		0 = Blob created 
-    #		1 = Entity is uploading
-    #		2 = Ready
-    #		3 = Checked out
-    #		4 = Entity is modifying 
-    #		5 = None 
+    #    Inputs:
+    #        ContainerID = 64-bit integer container ID
+    #        BlobState = 32-bit integer 
+    #        0 = Blob created 
+    #        1 = Entity is uploading
+    #        2 = Ready
+    #        3 = Checked out
+    #        4 = Entity is modifying 
+    #        5 = None 
     #
     #-------------------------------------------------------------
     def GetContainerBlobInfoListByState(self,ContainerID, BlobState):
-	
-	post_data = {
+    
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -529,38 +529,38 @@ class IronBoxRESTClient():
         if not response:
             return None
 
-	# Start parsing the Json response into a list of double-tuples
-	# where 0 = BlobID and 1 = BlobName
-	result = list()
-	jsonData = response["BlobInfoArray"]
-	for item in jsonData: 
-	    # Create a tuple [BlobID,BlobName] and add to our 
-	    # result list
-	    t = item.get("BlobID"), item.get("BlobName")
-	    result.append(t)
-	
-	# Done, return result list of double-tuples
-	return result
+        # Start parsing the Json response into a list of double-tuples
+        # where 0 = BlobID and 1 = BlobName
+        result = list()
+        jsonData = response["BlobInfoArray"]
+        for item in jsonData: 
+            # Create a tuple [BlobID,BlobName] and add to our 
+            # result list
+            t = item.get("BlobID"), item.get("BlobName")
+            result.append(t)
+    
+        # Done, return result list of double-tuples
+        return result
 
     #-------------------------------------------------------------
-    #	Retrieves the storage information required to read 
-    #	encrypted entity container blobs directly from storage. 
-    #	Returned information will include storage endpoint URL, 
-    #	container name and a shared access signature that grants 
-    #	limited temporary access to back-end storage.
-    #	
-    #	Callers can then use the URL specified in the 
-    #	SharedAccessSignatureUri response to directly read the 
-    #	encrypted blob from storage.
+    #    Retrieves the storage information required to read 
+    #    encrypted entity container blobs directly from storage. 
+    #    Returned information will include storage endpoint URL, 
+    #    container name and a shared access signature that grants 
+    #    limited temporary access to back-end storage.
+    #    
+    #    Callers can then use the URL specified in the 
+    #    SharedAccessSignatureUri response to directly read the 
+    #    encrypted blob from storage.
     #
-    #	Once downloaded, callers must then decrypt the encrypted 
-    #	blob using the information provided from the call to 
-    #	ContainerKeyData. 
+    #    Once downloaded, callers must then decrypt the encrypted 
+    #    blob using the information provided from the call to 
+    #    ContainerKeyData. 
     #
     #-------------------------------------------------------------
     def ReadEntityContainerBlob(self,ContainerID, BlobID):
-	
-	post_data = {
+    
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -579,28 +579,28 @@ class IronBoxRESTClient():
         if not response:
             return None
 
-	# Parse response into an IronBoxBlobReadData object
+        # Parse response into an IronBoxBlobReadData object
         BlobReadData = IronBoxBlobReadData() 
-	BlobReadData.ContainerStorageName = response.get('ContainerStorageName')
-	BlobReadData.SharedAccessSignature = response.get('SharedAccessSignature')
-	BlobReadData.SharedAccessSignatureUri = response.get('SharedAccessSignatureUri')
-	BlobReadData.StorageType = response.get('StorageType')
-	BlobReadData.StorageUri = response.get('StorageUri')
+        BlobReadData.ContainerStorageName = response.get('ContainerStorageName')
+        BlobReadData.SharedAccessSignature = response.get('SharedAccessSignature')
+        BlobReadData.SharedAccessSignatureUri = response.get('SharedAccessSignatureUri')
+        BlobReadData.StorageType = response.get('StorageType')
+        BlobReadData.StorageUri = response.get('StorageUri')
 
-	#Done, return the blob read data
-	return BlobReadData
+        #Done, return the blob read data
+        return BlobReadData
 
     #-------------------------------------------------------------
-    #	Removes a blob from an entity container, returns true on 
-    #	success false otherwise.	
+    #    Removes a blob from an entity container, returns true on 
+    #    success false otherwise.    
     #
-    #	Inputs:	
-    #	    ContainerID = 64-bit integer container ID
-    #	    BlobID = ID of the blob being checked in
+    #    Inputs:    
+    #        ContainerID = 64-bit integer container ID
+    #        BlobID = ID of the blob being checked in
     # 
     #-------------------------------------------------------------
     def RemoveEntityContainerBlob(self,ContainerID, BlobID):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -614,19 +614,19 @@ class IronBoxRESTClient():
         if r.status_code != requests.codes.ok:
             return None
 
-        return r.json()	
+        return r.json()    
 
 
     #-------------------------------------------------------------
-    #	Gets a setting for a given context. For example, using this
-    #	call you can retrieve certain properties of the context
-    #	secure.goironcloud.com, such as company name, company logo
-    #	URL, etc. The entity making this request must already be
-    #	a member of the context.
+    #    Gets a setting for a given context. For example, using this
+    #    call you can retrieve certain properties of the context
+    #    secure.goironcloud.com, such as company name, company logo
+    #    URL, etc. The entity making this request must already be
+    #    a member of the context.
     #-------------------------------------------------------------
     def GetContextSetting(self, Context, ContextSetting):
 
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -635,23 +635,23 @@ class IronBoxRESTClient():
         }
         url = self.APIServerURL + "GetContextSetting"
 
-        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)	
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)    
 
         if r.status_code != requests.codes.ok:
             return None
 
-        return r.json()	
-	
+        return r.json()    
+    
 
     #-------------------------------------------------------------
-    #	Returns the IDs and names of a container for an entity
-    #	in a given context (e.g. secure.goironcloud.com or 
-    #	demo.goironcloud.com) and by given container type (always
-    #	use 5 for now).
+    #    Returns the IDs and names of a container for an entity
+    #    in a given context (e.g. secure.goironcloud.com or 
+    #    demo.goironcloud.com) and by given container type (always
+    #    use 5 for now).
     #-------------------------------------------------------------
     def GetContainerInfoListByContext(self,Context,ContainerType):
-	
-	post_data = {
+    
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -670,36 +670,36 @@ class IronBoxRESTClient():
         if not response:
             return None
 
-	# Start parsing the Json response into a list of double-tuples
-	# where 0 = ContainerID and 1 = ContainerName
-	result = list()
-	jsonData = response["ContainerInfoArray"]
-	for item in jsonData: 
-	    # Create a tuple [ContainerID,ContainerName] and add to our 
-	    # result list
-	    t = item.get("ContainerID"), item.get("ContainerName")
-	    result.append(t)
-	
-	# Done, return result list of double-tuples
-	return result
+        # Start parsing the Json response into a list of double-tuples
+        # where 0 = ContainerID and 1 = ContainerName
+        result = list()
+        jsonData = response["ContainerInfoArray"]
+        for item in jsonData: 
+            # Create a tuple [ContainerID,ContainerName] and add to our 
+            # result list
+            t = item.get("ContainerID"), item.get("ContainerName")
+            result.append(t)
+    
+        # Done, return result list of double-tuples
+        return result
 
 
     #-------------------------------------------------------------
-    #	Creates an IronBox entity secure file transfer (SFT)
-    #	container with the given container configuration information
-    #	and for the given context.  The caller must already be a 
-    #	member of the given context and must have permissions to 
-    #	create SFT containers.
+    #    Creates an IronBox entity secure file transfer (SFT)
+    #    container with the given container configuration information
+    #    and for the given context.  The caller must already be a 
+    #    member of the given context and must have permissions to 
+    #    create SFT containers.
     #-------------------------------------------------------------
     def CreateEntitySFTContainer(self, Context, ContainerConfig):
 
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
             'Context': Context,
             'Name': ContainerConfig.Name,
-	    'Description': ContainerConfig.Description
+            'Description': ContainerConfig.Description
         }
 
         url = self.APIServerURL + "CreateEntitySFTContainer"
@@ -708,29 +708,29 @@ class IronBoxRESTClient():
 
         if r.status_code != requests.codes.ok:
             return None
-	
+    
         # Parse the response, get container key, IV and strength
         response = r.json()
         if not response:
             return None
 
-	# Parse response into an IronBoxSFTContainerData object
+        # Parse response into an IronBoxSFTContainerData object
         ResultContainerData = IronBoxSFTContainerConfig() 
-	ResultContainerData.Name = response.get('Name');	
-	ResultContainerData.Description = response.get('Description');	
-	ResultContainerData.ContainerID = response.get('ContainerID');	
-	ResultContainerData.FriendlyID = response.get('FriendlyID');	
+        ResultContainerData.Name = response.get('Name');    
+        ResultContainerData.Description = response.get('Description');    
+        ResultContainerData.ContainerID = response.get('ContainerID');    
+        ResultContainerData.FriendlyID = response.get('FriendlyID');    
 
-	# Done, return our parsed container data object
-        return ResultContainerData	
+        # Done, return our parsed container data object
+        return ResultContainerData
 
     #-------------------------------------------------------------
-    #	Removes an entity container, the caller must be the owner
-    #	of the entity container. Returns true on success, false 
-    #	otherwise.
+    #    Removes an entity container, the caller must be the owner
+    #    of the entity container. Returns true on success, false 
+    #    otherwise.
     #-------------------------------------------------------------
-    def RemoveEntityContainer(self,ContainerID):
-	post_data = {
+    def RemoveEntityContainer(self, ContainerID):
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -743,7 +743,31 @@ class IronBoxRESTClient():
         if r.status_code != requests.codes.ok:
             return None
 
-        return r.json()	
+        return r.json()
+
+    #-------------------------------------------------------------
+    #    Enable Easy Access on an existing container. Returns a list
+    #    of the Easy Access URL(s) with which external users (i.e. 
+    #    users that do not have an IronBox account) can access the 
+    #    container.
+    #-------------------------------------------------------------
+    def SetEntityContainerEasyAccess(self,ContainerID, EasyAccessMode, EasyAccessPassword):
+        post_data = {
+            'Entity': self.Entity,
+            'EntityType': self.EntityType,
+            'EntityPassword':self.EntityPassword,
+            'ContainerID': ContainerID,
+            'EasyAccessMode': EasyAccessMode,
+            'EasyAccessPassword': EasyAccessPassword
+        }
+        url = self.APIServerURL + "SetEntityContainerEasyAccess"
+
+        r = requests.post(url, data=post_data, headers={'Accept': self.ContentFormat}, verify=self.VerifySSLCert)
+
+        if r.status_code != requests.codes.ok:
+            return None
+
+        return r.json()
 
 # Regardless of key size, AES always uses a block size of 16
 #BS = 16
@@ -767,66 +791,66 @@ class IronBoxKeyData():
     # Symmetric key strength 0 = none, 1 = 128 and 2 = 256
     KeyStrength = 2
    
-	    	
+            
     #-------------------------------------------------------------
-    #	Encrypts a file using the symmetric key data contained in
-    #	in this object
-    #	
-    #	Returns:
-    #	    True on success, false otherwise
+    #    Encrypts a file using the symmetric key data contained in
+    #    in this object
+    #    
+    #    Returns:
+    #        True on success, false otherwise
     #-------------------------------------------------------------
     def Encrypt_File(self, in_filename, out_filename):
-	
-	readBlockSize = 1024
     
-	try:
-	    e = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
-	    if not os.path.exists(in_filename):
-		return False
-	    with open(in_filename, 'rb') as infile:
-		with open(out_filename, "wb") as outfile:
-		    while True:
-			buf = infile.read(readBlockSize)
-			if not buf:
-			    break
-			if len(buf) < readBlockSize:
-			    buf = pad(buf)
-			outfile.write(e.encrypt(buf))
-		    
-		    # if the in_file length is a multiple of the read block size,
-		    # then there will be no padding, so we need to add a padded 
-		    # block otherwise the cipher has no way of knowing where the 
-		    # end of the cipher text is 
-		    if (os.path.getsize(in_filename) % readBlockSize) == 0:
-			buf = pad(buf)
-			outfile.write(e.encrypt(buf))
-	    return True
+        readBlockSize = 1024
+    
+        try:
+            e = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
+            if not os.path.exists(in_filename):
+                return False
+            with open(in_filename, 'rb') as infile:
+                with open(out_filename, "wb") as outfile:
+                    while True:
+                        buf = infile.read(readBlockSize)
+                        if not buf:
+                            break
+                        if len(buf) < readBlockSize:
+                            buf = pad(buf)
+                        outfile.write(e.encrypt(buf))
+            
+                    # if the in_file length is a multiple of the read block size,
+                    # then there will be no padding, so we need to add a padded 
+                    # block otherwise the cipher has no way of knowing where the 
+                    # end of the cipher text is 
+                    if (os.path.getsize(in_filename) % readBlockSize) == 0:
+                        buf = pad(buf)
+                        outfile.write(e.encrypt(buf))
+            return True
 
-	except Exception, e:
-	    return False
+        except Exception, e:
+            return False
 
     #-------------------------------------------------------------
-    #	Decrypts a file using the symmetric key data contained in
-    #	this object
+    #    Decrypts a file using the symmetric key data contained in
+    #    this object
     #-------------------------------------------------------------
     def Decrypt_File(self, in_filename, out_filename):
-	try:
-	    d = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
-	    if not os.path.exists(in_filename):
-		return False
-	    with open(in_filename, 'rb') as infile:
-		with open(out_filename, 'wb') as outfile:
-		    while True:
-			buf = infile.read(1024)
-			if not buf:
-			    break
-			decrypted = d.decrypt(buf)
-			if len(buf) < 1024:
-			    decrypted = unpad(decrypted)
-			outfile.write(decrypted) 
-	    return True
-	except Exception, e:
-	    return False
+        try:
+            d = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
+            if not os.path.exists(in_filename):
+                return False
+            with open(in_filename, 'rb') as infile:
+                with open(out_filename, 'wb') as outfile:
+                    while True:
+                        buf = infile.read(1024)
+                        if not buf:
+                            break
+                        decrypted = d.decrypt(buf)
+                        if len(buf) < 1024:
+                            decrypted = unpad(decrypted)
+                        outfile.write(decrypted) 
+            return True
+        except Exception, e:
+            return False
 
 #------------------------------------------------------------------
 #   Class to hold IronBox blob check out data
@@ -837,16 +861,16 @@ class IronBoxBlobCheckOutData():
     SharedAccessSignatureUri = ""
     CheckInToken = ""
     StorageUri = ""
-    StorageType = 1		# always set to 1
+    StorageType = 1        # always set to 1
     ContainerStorageName = ""
 
     def DebugPrintProps(self):
-	print "SharedAccessSignature: %s" % self.SharedAccessSignature
-	print "SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri
-	print "CheckInToken: %s" % self.CheckInToken 
-	print "StorageUri: %s" % self.StorageUri 
-	print "StorageType: %d" % self.StorageType 
-	print "ContainerStorageName: %s" % self.ContainerStorageName 
+        print("SharedAccessSignature: %s" % self.SharedAccessSignature)
+        print("SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri)
+        print("CheckInToken: %s" % self.CheckInToken)
+        print("StorageUri: %s" % self.StorageUri)
+        print("StorageType: %d" % self.StorageType)
+        print("ContainerStorageName: %s" % self.ContainerStorageName)
 
 
 #------------------------------------------------------------------
@@ -861,11 +885,11 @@ class IronBoxBlobReadData():
     StorageUri = ""
 
     def DebugPrintProps(self):
-	print "ContainerStorageName: %s" % self.ContainerStorageName
-	print "SharedAccessSignature: %s" % self.SharedAccessSignature
-	print "SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri
-	print "StorageType: %s" % self.StorageType
-	print "StorageUri: %s" % self.StorageUri
+        print("ContainerStorageName: %s" % self.ContainerStorageName)
+        print("SharedAccessSignature: %s" % self.SharedAccessSignature)
+        print("SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri)
+        print("StorageType: %s" % self.StorageType)
+        print("StorageUri: %s" % self.StorageUri)
 
 #------------------------------------------------------------------
 #   Class to hold IronBox entity SFT container information
@@ -878,7 +902,7 @@ class IronBoxSFTContainerConfig():
     FriendlyID = ""
 
     def DebugPrintProps(self):
-	print "Name: %s" % self.Name
-	print "Description: %s" % self.Description
-	print "ContainerID: %d" % self.ContainerID
-	print "FriendlyID: %s" % self.FriendlyID
+        print("Name: %s" % self.Name)
+        print("Description: %s" % self.Description)
+        print("ContainerID: %d" % self.ContainerID)
+        print("FriendlyID: %s" % self.FriendlyID)

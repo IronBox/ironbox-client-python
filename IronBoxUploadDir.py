@@ -9,7 +9,7 @@
 #   Website: www.goironbox.com
 #
 #   Usage:
-#	python IronBoxUploadDir.py dir_to_upload
+#    python IronBoxUploadDir.py dir_to_upload
 #
 #---------------------------------------------------
 import sys
@@ -21,9 +21,9 @@ from IronBoxREST import IronBoxRESTClient
 # Your IronBox authentication parameters, you could
 # also pass these in as command arguments
 #---------------------------------------------------
-ContainerID = 100777	
+ContainerID = 100777
 IronBoxEmail = "email@email.com"
-IronBoxPassword = "password"
+IronBoxPassword = "password123"
 IronBoxAPIServerURL = "https://api.goironcloud.com/latest/"
 IronBoxAPIVersion = "latest"
 
@@ -38,7 +38,7 @@ InDir = sys.argv[1]
 def main():
     
     #----------------------------
-    #	Create an instance of the IronBox REST class
+    #    Create an instance of the IronBox REST class
     #----------------------------
     IronBoxRESTObj = IronBoxRESTClient(IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True)
 
@@ -51,8 +51,8 @@ def main():
     # Iterate the dirFiles array and upload each file
     #----------------------------
     for fileName in dirFiles:  
-	currentFilePath = join(InDir,fileName)	
-	IronBoxRESTObj.UploadFileToContainer(ContainerID, currentFilePath, fileName)
+        currentFilePath = join(InDir,fileName)
+        IronBoxRESTObj.UploadFileToContainer(ContainerID, currentFilePath, fileName)
 
 #---------------------------------------------------
 if __name__ == "__main__":
