@@ -33,12 +33,12 @@ Context = "secure.goironcloud.com"
 def main():
     
     #----------------------------
-    #	Create an instance of the IronBox REST class
+    #    Create an instance of the IronBox REST class
     #----------------------------
     IronBoxRESTObj = IronBoxRESTClient(IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True)
 
     #---------------------------- 
-    #	Get some public information about the context
+    #    Get some public information about the context
     #---------------------------- 
     print "Company Name: %s" % IronBoxRESTObj.GetContextSetting(Context, "CompanyName")
     print "Company Logo URL: %s" % IronBoxRESTObj.GetContextSetting(Context, "CompanyLogoUrl")

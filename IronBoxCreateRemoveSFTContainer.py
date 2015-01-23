@@ -29,32 +29,39 @@ Context = "secure.goironcloud.com"
 def main():
     
     #--------------------------------------------------
-    #	Create an instance of the IronBox REST class
+    #    Create an instance of the IronBox REST class
     #--------------------------------------------------
     IronBoxRESTObj = IronBoxRESTClient(IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True)
 
     #--------------------------------------------------
-    #	Create the container, duplicate container names
-    #	are supported
+    #    Create the container, duplicate container names
+    #    are supported
     #--------------------------------------------------
     ContainerConfig = IronBoxSFTContainerConfig() 
     ContainerConfig.Name = "New container name"
     ContainerConfig.Description = "Description of the new container (optional)"
     ResultContainerConfig = IronBoxRESTObj.CreateEntitySFTContainer(Context, ContainerConfig)
     if ResultContainerConfig is None:
-	print "Unable to create container"
-	return
+        print "Unable to create container"
+        return
 
     print "New container created with ID=%s" % ResultContainerConfig.ContainerID
 
     #--------------------------------------------------
-    #	Remove the container
+    #    Set the easy access settings
+    #--------------------------------------------------
+    result = IronBoxRESTObj.SetEntityContainerEasyAccess(ResultContainerConfig.ContainerID, 
+                                                         2, 'iampassword')
+    print "Easy Access URL(s)", result
+    
+    #--------------------------------------------------
+    #    Remove the container
     #--------------------------------------------------
     if IronBoxRESTObj.RemoveEntityContainer(ResultContainerConfig.ContainerID) is False:
-	print "Unable to remove container"
-	return
+        print "Unable to remove container"
+        return
 
-    print "New container was successfully removed"	
+    print "New container was successfully removed"
 
 #---------------------------------------------------
 import string, datetime

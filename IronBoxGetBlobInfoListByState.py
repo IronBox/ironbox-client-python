@@ -9,7 +9,7 @@
 #   Website: www.goironbox.com
 #
 #   Usage:
-#	python IronBoxGetBlobInfoListByState.py
+#    python IronBoxGetBlobInfoListByState.py
 #
 #---------------------------------------------------
 import sys
@@ -21,9 +21,9 @@ from IronBoxREST import IronBoxRESTClient
 # Your IronBox authentication parameters, you could
 # also pass these in as command arguments
 #---------------------------------------------------
-ContainerID = 100777	
+ContainerID = 100777
 IronBoxEmail = "email@email.com"
-IronBoxPassword = "password"
+IronBoxPassword = "password123"
 IronBoxAPIServerURL = "https://api.goironcloud.com/latest/"
 IronBoxAPIVersion = "latest"
 
@@ -49,7 +49,7 @@ def main():
     # where 0 = blob ID and 1 = blob name 
     result = IronBoxRESTObj.GetContainerBlobInfoListByState(ContainerID, BlobState)
     for item in result:
-	print "%s -> %s" % (item[0],item[1]) 
+        print "%s -> %s" % (item[0],item[1]) 
 
 #---------------------------------------------------
 if __name__ == "__main__":

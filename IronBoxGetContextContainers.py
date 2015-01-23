@@ -8,8 +8,8 @@
 #   or server that an entity logs into.  For example,
 #   an entity might log into the following:
 #
-#	Context1: secure.goironcloud.com
-#	Context2: test.goironcloud.com
+#    Context1: secure.goironcloud.com
+#    Context2: test.goironcloud.com
 #
 #   This demo shows you how to the retrieve the
 #   IronBox containers that the entity has access to
@@ -19,7 +19,7 @@
 #   Website: www.goironbox.com
 #
 #   Usage:
-#	python IronBoxGetContextContainers.py
+#    python IronBoxGetContextContainers.py
 #
 #---------------------------------------------------
 from IronBoxREST import IronBoxRESTClient 
@@ -46,7 +46,7 @@ ContainerType = 5
 def main():
     
     #----------------------------
-    #	Create an instance of the IronBox REST class
+    #    Create an instance of the IronBox REST class
     #----------------------------
     IronBoxRESTObj = IronBoxRESTClient(IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True)
 
