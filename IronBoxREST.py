@@ -15,26 +15,26 @@
 #
 #	01/02/2014  -	v1.8 Corrected issue with Encrypt_File method
 #			in ContainerKeyData class. Final padding check
-#			should be based on the read block size, not 
+#			should be based on the read block size, not
 #			AES block size, was only an issue for files < 1024
 #			and multiple of 16.
-# 
-#	12/16/2013  -	v1.7 Added CreateEntitySFTContainer and 
+#
+#	12/16/2013  -	v1.7 Added CreateEntitySFTContainer and
 #			RemoveEntityContainer
 #
-#	12/06/2013  -	v1.6 Added GetContextSetting and 
-#			GetContainerInfoListByContext methods 
+#	12/06/2013  -	v1.6 Added GetContextSetting and
+#			GetContainerInfoListByContext methods
 #
-#	12/04/2013  -	v1.5 Added RemoveEntityContainerBlob, 
+#	12/04/2013  -	v1.5 Added RemoveEntityContainerBlob,
 #			DownloadBlobFromContainer (helper method),
 #			ReadEntityContainerBlob
-#			
+#
 #	12/04/2013  -	v1.4 Added GetContainerBlobInfoListByState
 #
-#	11/15/2013  -	v1.3 Added x-ms-version in BlockBlob upload for 
+#	11/15/2013  -	v1.3 Added x-ms-version in BlockBlob upload for
 #			stricter adherence to protocol
 #
-#	11/12/2013  -	v1.2 Removed dependency on M2Crypto, Urllib, 
+#	11/12/2013  -	v1.2 Removed dependency on M2Crypto, Urllib,
 #			Urllib2, openssl and Json.  Added pycrypto.
 #			Using BlockBlob and re-assembling on the server
 #			as it's more efficient than PageBlobs
@@ -48,38 +48,38 @@ import sys
 
 import requests
 from Crypto.Cipher import AES
-import base64
 import json
+import base64
 
 class IronBoxRESTClient():
 
     def __init__(self, entity, entity_password, entity_type=0, version='latest', content_format='application/json', verbose=False, verifySSLCert=True):
-	# Actual entity identifier, this can be email address,
-	# name identifier (mostly internal use only) or an entity
-	# ID which is a 64-bit integer that identifies the specific
-	# user
-	self.Entity = entity
+        # Actual entity identifier, this can be email address,
+        # name identifier (mostly internal use only) or an entity
+        # ID which is a 64-bit integer that identifies the specific
+        # user
+        self.Entity = entity
 
-	# Entity password
-	self.EntityPassword = entity_password
+        # Entity password
+        self.EntityPassword = entity_password
 
-	# Entity type, 0 = email address, 1 = name identifier, 2 = entity ID
-	self.EntityType = entity_type
+        # Entity type, 0 = email address, 1 = name identifier, 2 = entity ID
+        self.EntityType = entity_type
 
-	# API server URL, default however can be changed
-	# to test servers
-	self.APIServerURL = "https://api.goironcloud.com/%s/" % version
+        # API server URL, default however can be changed
+        # to test servers
+        self.APIServerURL = "https://api.goironcloud.com/%s/" % version
 
-	# Accept format
-	self.ContentFormat = content_format
+        # Accept format
+        self.ContentFormat = content_format
 
-	# Flag that indicates whether or not to be verbose or not
-	self.Verbose = verbose
+        # Flag that indicates whether or not to be verbose or not
+        self.Verbose = verbose
 
-	# Verify SSL certificate flag
-	self.VerifySSLCert = verifySSLCert
+        # Verify SSL certificate flag
+        self.VerifySSLCert = verifySSLCert
 
-	return
+        return
 
     #*************************************************************
     #	IronBox REST Client helper functions
@@ -96,7 +96,7 @@ class IronBoxRESTClient():
     #	    Returns True on success, False otherwise
     #-------------------------------------------------------------
     def UploadFileToContainer(self,ContainerID, FilePath, BlobName):
-	#----------------------------
+        #----------------------------
         #   Step 1:
         #   Test to make sure that the API server is accessible
         #----------------------------
@@ -150,8 +150,8 @@ class IronBoxRESTClient():
         #   more advanced.
         #----------------------------
         self.console_log("Uploading encrypted copy of " + FilePath)
-	if not self.UploadBlobWithSharedAccessSignatureUri(EncryptedFilePath,CheckOutData.SharedAccessSignatureUri):
-	    raise Exception("Unable to upload encrypted file")
+        if not self.UploadBlobWithSharedAccessSignatureUri(EncryptedFilePath,CheckOutData.SharedAccessSignatureUri):
+            raise Exception("Unable to upload encrypted file")
 
         #----------------------------
         #   Step 6:
@@ -201,45 +201,45 @@ class IronBoxRESTClient():
         #---------------------------------------------------------
         #   Step 3:
         #   Download the blob read data, specifically we need
-	#   a shared access signature URI to the encrypted
-	#   blob
+        #   a shared access signature URI to the encrypted
+        #   blob
         #---------------------------------------------------------
-	ReadBlobData = self.ReadEntityContainerBlob(ContainerID,BlobID)
-	if not ReadBlobData:
-	    raise Exception("Unable to read container blob download data")
-	self.console_log("Retrieved blob download Shared Access Signature URI")
-	EncryptedFilePath = DestFilePath + ".encrypted"
-	r = requests.get(ReadBlobData.SharedAccessSignatureUri, stream=True, verify=self.VerifySSLCert)
-	numBytesDownloaded = 0
-	with open(EncryptedFilePath, 'wb') as f:
-	    for chunk in r.iter_content(chunk_size=1024):
-		if chunk:
-		    f.write(chunk)
-		    numBytesDownloaded = numBytesDownloaded + len(chunk)
-		    # Show progress if needed
-		    if self.Verbose is True:
-			sys.stdout.write("\rDownloaded %d encrypted byte(s) to %s" % (numBytesDownloaded,EncryptedFilePath))
-			sys.stdout.flush()
-		    f.flush()
+        ReadBlobData = self.ReadEntityContainerBlob(ContainerID,BlobID)
+        if not ReadBlobData:
+            raise Exception("Unable to read container blob download data")
+        self.console_log("Retrieved blob download Shared Access Signature URI")
+        EncryptedFilePath = DestFilePath + ".encrypted"
+        r = requests.get(ReadBlobData.SharedAccessSignatureUri, stream=True, verify=self.VerifySSLCert)
+        numBytesDownloaded = 0
+        with open(EncryptedFilePath, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+                    numBytesDownloaded = numBytesDownloaded + len(chunk)
+                    # Show progress if needed
+                    if self.Verbose is True:
+                        sys.stdout.write("\rDownloaded %d encrypted byte(s) to %s" % (numBytesDownloaded,EncryptedFilePath))
+                        sys.stdout.flush()
+                    f.flush()
 
-	    # If verbose, we need to print out a new line
-	    if self.Verbose:
-		print
+            # If verbose, we need to print out a new line
+            if self.Verbose:
+                print
 
-	#---------------------------------------------------------
+        #---------------------------------------------------------
         #   Step 4:
-	#   Decrypt the downloaded blob
+        #   Decrypt the downloaded blob
         #---------------------------------------------------------
-	self.console_log("Decrypting encrypted blob")
-	IronBoxKeyData.Decrypt_File(EncryptedFilePath,DestFilePath)
+        self.console_log("Decrypting encrypted blob")
+        IronBoxKeyData.Decrypt_File(EncryptedFilePath,DestFilePath)
 
-	#---------------------------------------------------------
-        #   Step 5:
-	#   Done, clean up
         #---------------------------------------------------------
-	self.console_log("Done, cleaning up %s" % EncryptedFilePath)
+        #   Step 5:
+        #   Done, clean up
+        #---------------------------------------------------------
+        self.console_log("Done, cleaning up %s" % EncryptedFilePath)
         os.remove(EncryptedFilePath)
-	return True
+        return True
 
     #-------------------------------------------------------------
     #	Uploads an encrypted file to cloud storage using the
@@ -252,86 +252,86 @@ class IronBoxRESTClient():
     #-------------------------------------------------------------
     def UploadBlobWithSharedAccessSignatureUri(self, in_filename, sasUri):
 
-	# Validate file
-	if not os.path.exists(in_filename):
-	    return False
+        # Validate file
+        if not os.path.exists(in_filename):
+            return False
 
-	# Cloud storage only allows blocks of max 4MB, and max 50k blocks
-	# so 200 GB max	per file
-	blockSizeMB = 4
-	blockSizeBytes = blockSizeMB * 1024 * 1024
-	fileSize = os.path.getsize(in_filename)
-	self.console_log("Starting send in %dMB increments" % blockSizeMB)
+        # Cloud storage only allows blocks of max 4MB, and max 50k blocks
+        # so 200 GB max	per file
+        blockSizeMB = 4
+        blockSizeBytes = blockSizeMB * 1024 * 1024
+        fileSize = os.path.getsize(in_filename)
+        self.console_log("Starting send in %dMB increments" % blockSizeMB)
 
-	# Send headers
-	headers = {
+        # Send headers
+        headers = {
             'content-type': 'application/octet-stream',
             'x-ms-blob-type' : 'BlockBlob',
-	    'x-ms-version' : '2012-02-12'
-	}
+            'x-ms-version' : '2012-02-12'
+        }
 
-	# Open handle to encrypted file and send it in blocks
-	sasUriBlockPrefix = sasUri + "&comp=block&blockid="
-	blockIDs = []
-	numBytesSent = 0
-	i = 0
-	with open(in_filename,'rb') as infile:
-	    while True:
+        # Open handle to encrypted file and send it in blocks
+        sasUriBlockPrefix = sasUri + "&comp=block&blockid="
+        blockIDs = []
+        numBytesSent = 0
+        i = 0
+        with open(in_filename,'rb') as infile:
+            while True:
 
-		buf = infile.read(blockSizeBytes)
-		if not buf:
-		    break;
+                buf = infile.read(blockSizeBytes)
+                if not buf:
+                    break;
 
-		# block IDs all have to be the same length, which was NOT
-		# documented by MSFT
-		blockID = "block"+"{0:08}".format(i)
-		blockSASUri = sasUriBlockPrefix + blockID.encode('base64','strict')
+                # block IDs all have to be the same length, which was NOT
+                # documented by MSFT
+                blockID = "block"+"{0:08}".format(i)
+                blockSASUri = sasUriBlockPrefix + blockID.encode('base64','strict')
 
-		# Create a blob block
-		r = requests.put(blockSASUri, data=buf, headers=headers, verify=self.VerifySSLCert)
-		if r.status_code != requests.codes.created:
-		    return False
+                # Create a blob block
+                r = requests.put(blockSASUri, data=buf, headers=headers, verify=self.VerifySSLCert)
+                if r.status_code != requests.codes.created:
+                    return False
 
-		# Block was successfuly sent, record its ID
-		blockIDs.append(blockID)
-		numBytesSent += len(buf)
-		i += 1
+                # Block was successfuly sent, record its ID
+                blockIDs.append(blockID)
+                numBytesSent += len(buf)
+                i += 1
 
-		# Show progress if needed
-		if self.Verbose is True:
-		    done = int(50 * numBytesSent / fileSize)
-		    sys.stdout.write("\r[%s%s] %d byte(s) sent" % ('=' * done, ' ' * (50-done), numBytesSent) )
-		    sys.stdout.flush()
+                # Show progress if needed
+                if self.Verbose is True:
+                    done = int(50 * numBytesSent / fileSize)
+                    sys.stdout.write("\r[%s%s] %d byte(s) sent" % ('=' * done, ' ' * (50-done), numBytesSent) )
+                    sys.stdout.flush()
 
-	# We're done, so if verbose go to new line
-	if self.Verbose:
-	    print
+        # We're done, so if verbose go to new line
+        if self.Verbose:
+            print
 
-	# Done sending blocks, so commit the blocks into a single one
-	# do the final re-assembly on the storage server side
-	commitBlockSASUrl = sasUri + "&comp=blockList"
-	commitheaders = {
+        # Done sending blocks, so commit the blocks into a single one
+        # do the final re-assembly on the storage server side
+        commitBlockSASUrl = sasUri + "&comp=blockList"
+        commitheaders = {
             'content-type': 'text/xml',
-	    'x-ms-version' : '2012-02-12'
-	}
-	# build list of block ids as xml elements
-	blockListBody = ''
-	for x in blockIDs:
-	    encodedBlockID = x.encode('base64','strict').strip()
-	    # Indicate blocks to commit per 2012-02-12 version PUT block list specifications
-	    blockListBody += "<Latest>%s</Latest>" % encodedBlockID
-	commitBody = '<?xml version="1.0" encoding="utf-8"?><BlockList>%s</BlockList>' % blockListBody
-	commitResponse = requests.put(commitBlockSASUrl, data=commitBody, headers=commitheaders, verify=self.VerifySSLCert)
-	return commitResponse.status_code == requests.codes.created
+            'x-ms-version' : '2012-02-12'
+        }
+        # build list of block ids as xml elements
+        blockListBody = ''
+        for x in blockIDs:
+            encodedBlockID = x.encode('base64','strict').strip()
+            # Indicate blocks to commit per 2012-02-12 version PUT block list specifications
+            blockListBody += "<Latest>%s</Latest>" % encodedBlockID
+        commitBody = '<?xml version="1.0" encoding="utf-8"?><BlockList>%s</BlockList>' % blockListBody
+        commitResponse = requests.put(commitBlockSASUrl, data=commitBody, headers=commitheaders, verify=self.VerifySSLCert)
+        return commitResponse.status_code == requests.codes.created
 
 
     #-------------------------------------------------------------
     #	Console logger
     #-------------------------------------------------------------
     def console_log(self, m):
-	if self.Verbose is True:
-	    now = datetime.datetime.now()
-	    print(str(now) + ": " + m)
+        if self.Verbose is True:
+            now = datetime.datetime.now()
+            print(str(now) + ": " + m)
 
     #*************************************************************
     #	CORE REST API FUNCTIONS
@@ -345,7 +345,7 @@ class IronBoxRESTClient():
     #	A boolean value if
     #-------------------------------------------------------------
     def Ping(self):
-	r = requests.get(self.APIServerURL + 'Ping', verify=self.VerifySSLCert)
+        r = requests.get(self.APIServerURL + 'Ping', verify=self.VerifySSLCert)
         if r.status_code == requests.codes.ok:
             return r.json()
         return False
@@ -358,7 +358,7 @@ class IronBoxRESTClient():
     #	    on error
     #-------------------------------------------------------------
     def ContainerKeyData(self,ContainerID):
-	url = self.APIServerURL + "ContainerKeyData"
+        url = self.APIServerURL + "ContainerKeyData"
 
         post_data = {
             'Entity': self.Entity,
@@ -382,13 +382,13 @@ class IronBoxRESTClient():
         session_key_base_64 = response.get('SessionKeyBase64', None)
         if not session_key_base_64:
             return None
-        ContainerKeyData.SymmetricKey = base64.b64decode('session_key_base_64', validate=True)
+        ContainerKeyData.SymmetricKey = base64.b64decode(session_key_base_64.decode, validate=True)
         ContainerKeyData.IV = base64.b64decode(response.get('SessionIVBase64'), validate=True)
-        ContainerKeyData.KeyStrength = response.get('SymmetricKeyStrength')
+        ContainerKeyData.KeyStrength =  response.get('SymmetricKeyStrength')
 
         return ContainerKeyData
 
-  
+
     #-------------------------------------------------------------
     #	Creates an IronBox blob in an existing container
     #
@@ -397,7 +397,7 @@ class IronBoxRESTClient():
     #	    None on error
     #-------------------------------------------------------------
     def CreateEntityContainerBlob(self,ContainerID, BlobName):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -426,7 +426,7 @@ class IronBoxRESTClient():
     #	    otherwise None on error
     #-------------------------------------------------------------
     def CheckOutEntityContainerBlob(self,ContainerID, BlobIDName):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -472,7 +472,7 @@ class IronBoxRESTClient():
     #
     #-------------------------------------------------------------
     def CheckInEntityContainerBlob(self,ContainerID, BlobIDName, BlobSizeBytes, CheckInToken):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -511,7 +511,7 @@ class IronBoxRESTClient():
     #-------------------------------------------------------------
     def GetContainerBlobInfoListByState(self,ContainerID, BlobState):
 
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -530,18 +530,18 @@ class IronBoxRESTClient():
         if not response:
             return None
 
-	# Start parsing the Json response into a list of double-tuples
-	# where 0 = BlobID and 1 = BlobName
-	result = list()
-	jsonData = response["BlobInfoArray"]
-	for item in jsonData:
-	    # Create a tuple [BlobID,BlobName] and add to our
-	    # result list
-	    t = item.get("BlobID"), item.get("BlobName")
-	    result.append(t)
+        # Start parsing the Json response into a list of double-tuples
+        # where 0 = BlobID and 1 = BlobName
+        result = list()
+        jsonData = response["BlobInfoArray"]
+        for item in jsonData:
+            # Create a tuple [BlobID,BlobName] and add to our
+            # result list
+            t = item.get("BlobID"), item.get("BlobName")
+            result.append(t)
 
-	# Done, return result list of double-tuples
-	return result
+        # Done, return result list of double-tuples
+        return result
 
     #-------------------------------------------------------------
     #	Retrieves the storage information required to read
@@ -561,7 +561,7 @@ class IronBoxRESTClient():
     #-------------------------------------------------------------
     def ReadEntityContainerBlob(self,ContainerID, BlobID):
 
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -580,16 +580,16 @@ class IronBoxRESTClient():
         if not response:
             return None
 
-	# Parse response into an IronBoxBlobReadData object
+        # Parse response into an IronBoxBlobReadData object
         BlobReadData = IronBoxBlobReadData()
-	BlobReadData.ContainerStorageName = response.get('ContainerStorageName')
-	BlobReadData.SharedAccessSignature = response.get('SharedAccessSignature')
-	BlobReadData.SharedAccessSignatureUri = response.get('SharedAccessSignatureUri')
-	BlobReadData.StorageType = response.get('StorageType')
-	BlobReadData.StorageUri = response.get('StorageUri')
+        BlobReadData.ContainerStorageName = response.get('ContainerStorageName')
+        BlobReadData.SharedAccessSignature = response.get('SharedAccessSignature')
+        BlobReadData.SharedAccessSignatureUri = response.get('SharedAccessSignatureUri')
+        BlobReadData.StorageType = response.get('StorageType')
+        BlobReadData.StorageUri = response.get('StorageUri')
 
-	#Done, return the blob read data
-	return BlobReadData
+        #Done, return the blob read data
+        return BlobReadData
 
     #-------------------------------------------------------------
     #	Removes a blob from an entity container, returns true on
@@ -601,7 +601,7 @@ class IronBoxRESTClient():
     #
     #-------------------------------------------------------------
     def RemoveEntityContainerBlob(self,ContainerID, BlobID):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -627,7 +627,7 @@ class IronBoxRESTClient():
     #-------------------------------------------------------------
     def GetContextSetting(self, Context, ContextSetting):
 
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -652,7 +652,7 @@ class IronBoxRESTClient():
     #-------------------------------------------------------------
     def GetContainerInfoListByContext(self,Context,ContainerType):
 
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -671,18 +671,18 @@ class IronBoxRESTClient():
         if not response:
             return None
 
-	# Start parsing the Json response into a list of double-tuples
-	# where 0 = ContainerID and 1 = ContainerName
-	result = list()
-	jsonData = response["ContainerInfoArray"]
-	for item in jsonData:
-	    # Create a tuple [ContainerID,ContainerName] and add to our
-	    # result list
-	    t = item.get("ContainerID"), item.get("ContainerName")
-	    result.append(t)
+        # Start parsing the Json response into a list of double-tuples
+        # where 0 = ContainerID and 1 = ContainerName
+        result = list()
+        jsonData = response["ContainerInfoArray"]
+        for item in jsonData:
+            # Create a tuple [ContainerID,ContainerName] and add to our
+            # result list
+            t = item.get("ContainerID"), item.get("ContainerName")
+            result.append(t)
 
-	# Done, return result list of double-tuples
-	return result
+        # Done, return result list of double-tuples
+        return result
 
 
     #-------------------------------------------------------------
@@ -694,13 +694,13 @@ class IronBoxRESTClient():
     #-------------------------------------------------------------
     def CreateEntitySFTContainer(self, Context, ContainerConfig):
 
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
             'Context': Context,
             'Name': ContainerConfig.Name,
-	    'Description': ContainerConfig.Description
+            'Description': ContainerConfig.Description
         }
 
         url = self.APIServerURL + "CreateEntitySFTContainer"
@@ -715,14 +715,14 @@ class IronBoxRESTClient():
         if not response:
             return None
 
-	# Parse response into an IronBoxSFTContainerData object
+        # Parse response into an IronBoxSFTContainerData object
         ResultContainerData = IronBoxSFTContainerConfig()
-	ResultContainerData.Name = response.get('Name');
-	ResultContainerData.Description = response.get('Description');
-	ResultContainerData.ContainerID = response.get('ContainerID');
-	ResultContainerData.FriendlyID = response.get('FriendlyID');
+        ResultContainerData.Name = response.get('Name');
+        ResultContainerData.Description = response.get('Description');
+        ResultContainerData.ContainerID = response.get('ContainerID');
+        ResultContainerData.FriendlyID = response.get('FriendlyID');
 
-	# Done, return our parsed container data object
+        # Done, return our parsed container data object
         return ResultContainerData
 
     #-------------------------------------------------------------
@@ -731,7 +731,7 @@ class IronBoxRESTClient():
     #	otherwise.
     #-------------------------------------------------------------
     def RemoveEntityContainer(self,ContainerID):
-	post_data = {
+        post_data = {
             'Entity': self.Entity,
             'EntityType': self.EntityType,
             'EntityPassword':self.EntityPassword,
@@ -767,7 +767,7 @@ class IronBoxKeyData():
 
     # Symmetric key strength 0 = none, 1 = 128 and 2 = 256
     KeyStrength = 2
-   
+
 
     #-------------------------------------------------------------
     #	Encrypts a file using the symmetric key data contained in
@@ -778,56 +778,56 @@ class IronBoxKeyData():
     #-------------------------------------------------------------
     def Encrypt_File(self, in_filename, out_filename):
 
-	readBlockSize = 1024
+        readBlockSize = 1024
 
-	try:
-	    e = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
-	    if not os.path.exists(in_filename):
-		return False
-	    with open(in_filename, 'rb') as infile:
-		with open(out_filename, "wb") as outfile:
-		    while True:
-			buf = infile.read(readBlockSize)
-			if not buf:
-			    break
-			if len(buf) < readBlockSize:
-			    buf = pad(buf)
-			outfile.write(e.encrypt(buf))
+        try:
+            e = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
+            if not os.path.exists(in_filename):
+                return False
+            with open(in_filename, 'rb') as infile:
+                with open(out_filename, "wb") as outfile:
+                    while True:
+                        buf = infile.read(readBlockSize)
+                        if not buf:
+                            break
+                        if len(buf) < readBlockSize:
+                            buf = pad(buf)
+                        outfile.write(e.encrypt(buf))
 
-		    # if the in_file length is a multiple of the read block size,
-		    # then there will be no padding, so we need to add a padded
-		    # block otherwise the cipher has no way of knowing where the
-		    # end of the cipher text is
-		    if (os.path.getsize(in_filename) % readBlockSize) == 0:
-			buf = pad(buf)
-			outfile.write(e.encrypt(buf))
-	    return True
+                    # if the in_file length is a multiple of the read block size,
+                    # then there will be no padding, so we need to add a padded
+                    # block otherwise the cipher has no way of knowing where the
+                    # end of the cipher text is
+                    if (os.path.getsize(in_filename) % readBlockSize) == 0:
+                        buf = pad(buf)
+                        outfile.write(e.encrypt(buf))
+            return True
 
-	except Exception:
-	    return False
+        except Exception:
+            return False
 
     #-------------------------------------------------------------
     #	Decrypts a file using the symmetric key data contained in
     #	this object
     #-------------------------------------------------------------
     def Decrypt_File(self, in_filename, out_filename):
-	try:
-	    d = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
-	    if not os.path.exists(in_filename):
-		return False
-	    with open(in_filename, 'rb') as infile:
-		with open(out_filename, 'wb') as outfile:
-		    while True:
-			buf = infile.read(1024)
-			if not buf:
-			    break
-			decrypted = d.decrypt(buf)
-			if len(buf) < 1024:
-			    decrypted = unpad(decrypted)
-			outfile.write(decrypted)
-	    return True
-	except Exception:
-	    return False
+        try:
+            d = AES.new(self.SymmetricKey, AES.MODE_CBC, self.IV)
+            if not os.path.exists(in_filename):
+                return False
+            with open(in_filename, 'rb') as infile:
+                with open(out_filename, 'wb') as outfile:
+                    while True:
+                        buf = infile.read(1024)
+                        if not buf:
+                            break
+                        decrypted = d.decrypt(buf)
+                        if len(buf) < 1024:
+                            decrypted = unpad(decrypted)
+                        outfile.write(decrypted)
+            return True
+        except Exception:
+            return False
 
 #------------------------------------------------------------------
 #   Class to hold IronBox blob check out data
@@ -842,15 +842,15 @@ class IronBoxBlobCheckOutData():
     ContainerStorageName = ""
 
     def DebugPrintProps(self):
-	print("SharedAccessSignature: %s" % self.SharedAccessSignature)
-	print("SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri)
-	print("CheckInToken: %s" % self.CheckInToken)
-	print("StorageUri: %s" % self.StorageUri)
-	print("StorageType: %d" % self.StorageType)
-	print("ContainerStorageName: %s" % self.ContainerStorageName)
+        print("SharedAccessSignature: %s" % self.SharedAccessSignature)
+        print("SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri)
+        print("CheckInToken: %s" % self.CheckInToken)
+        print("StorageUri: %s" % self.StorageUri)
+        print("StorageType: %d" % self.StorageType)
+        print("ContainerStorageName: %s" % self.ContainerStorageName)
 
 
-#------------------------------------------------------------------
+    #------------------------------------------------------------------
 #   Class to hold IronBox blob read data
 #------------------------------------------------------------------
 class IronBoxBlobReadData():
@@ -862,11 +862,11 @@ class IronBoxBlobReadData():
     StorageUri = ""
 
     def DebugPrintProps(self):
-	print("ContainerStorageName: %s" % self.ContainerStorageName)
-	print("SharedAccessSignature: %s" % self.SharedAccessSignature)
-	print("SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri)
-	print("StorageType: %s" % self.StorageType)
-	print("StorageUri: %s" % self.StorageUri)
+        print("ContainerStorageName: %s" % self.ContainerStorageName)
+        print("SharedAccessSignature: %s" % self.SharedAccessSignature)
+        print("SharedAccessSignatureUri: %s" % self.SharedAccessSignatureUri)
+        print("StorageType: %s" % self.StorageType)
+        print("StorageUri: %s" % self.StorageUri)
 
 #------------------------------------------------------------------
 #   Class to hold IronBox entity SFT container information
@@ -879,7 +879,7 @@ class IronBoxSFTContainerConfig():
     FriendlyID = ""
 
     def DebugPrintProps(self):
-	print("Name: %s" % self.Name)
-	print("Description: %s" % self.Description)
-	print("ContainerID: %d" % self.ContainerID)
-	print("FriendlyID: %s" % self.FriendlyID)
+        print("Name: %s" % self.Name)
+        print("Description: %s" % self.Description)
+        print("ContainerID: %d" % self.ContainerID)
+        print("FriendlyID: %s" % self.FriendlyID)
