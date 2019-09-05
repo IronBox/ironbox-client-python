@@ -49,7 +49,7 @@ def main():
     # where 0 = blob ID and 1 = blob name 
     result = IronBoxRESTObj.GetContainerBlobInfoListByState(ContainerID, BlobState)
     for item in result:
-	print "%s -> %s" % (item[0],item[1]) 
+	print("%s -> %s" % (item[0],item[1]))
 
 #---------------------------------------------------
 if __name__ == "__main__":

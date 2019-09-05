@@ -213,3 +213,10 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+#intellij
+.idea
+*.iml
+
+#python virtual env
+venv/*

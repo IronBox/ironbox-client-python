@@ -42,19 +42,19 @@ def main():
     ContainerConfig.Description = "Description of the new container (optional)"
     ResultContainerConfig = IronBoxRESTObj.CreateEntitySFTContainer(Context, ContainerConfig)
     if ResultContainerConfig is None:
-	print "Unable to create container"
+	print("Unable to create container")
 	return
 
-    print "New container created with ID=%s" % ResultContainerConfig.ContainerID
+    print("New container created with ID=%s" % ResultContainerConfig.ContainerID)
 
     #--------------------------------------------------
     #	Remove the container
     #--------------------------------------------------
     if IronBoxRESTObj.RemoveEntityContainer(ResultContainerConfig.ContainerID) is False:
-	print "Unable to remove container"
+	print("Unable to remove container")
 	return
 
-    print "New container was successfully removed"	
+    print("New container was successfully removed")
 
 #---------------------------------------------------
 import string, datetime

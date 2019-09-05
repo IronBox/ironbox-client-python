@@ -40,8 +40,8 @@ def main():
     #---------------------------- 
     #	Get some public information about the context
     #---------------------------- 
-    print "Company Name: %s" % IronBoxRESTObj.GetContextSetting(Context, "CompanyName")
-    print "Company Logo URL: %s" % IronBoxRESTObj.GetContextSetting(Context, "CompanyLogoUrl")
+    print("Company Name: %s" % IronBoxRESTObj.GetContextSetting(Context, "CompanyName"))
+    print("Company Logo URL: %s" % IronBoxRESTObj.GetContextSetting(Context, "CompanyLogoUrl"))
 
 #---------------------------------------------------
 import string, datetime
