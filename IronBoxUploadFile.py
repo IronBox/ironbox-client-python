@@ -8,13 +8,13 @@
 """
 
 
-from IronBoxREST import IronBoxRESTClient 
+from IronBoxREST import IronBoxRESTClient
 
-#---------------------------------------------------
+# ---------------------------------------------------
 # Your IronBox authentication parameters, you could
 # also pass these in as command arguments
-#---------------------------------------------------
-ContainerID = 100777	
+# ---------------------------------------------------
+ContainerID = 100777
 IronBoxEmail = "email@email.com"
 IronBoxPassword = "password123"
 IronBoxAPIServerURL = "https://api.goironcloud.com/latest/"
@@ -24,13 +24,14 @@ IronBoxFileName = "testFileOnIronBox.txt"
 
 
 def main():
-    
+
     # Create an instance of the IronBox REST class
-    IronBoxRESTObj = IronBoxRESTClient(IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True)
+    IronBoxRESTObj = IronBoxRESTClient(
+        IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True
+    )
 
     IronBoxRESTObj.upload_file_to_container(ContainerID, InFile, IronBoxFileName)
 
 
-import string, datetime
 if __name__ == "__main__":
     main()

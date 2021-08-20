@@ -21,28 +21,30 @@
 """
 
 
-from IronBoxREST import IronBoxRESTClient 
+from IronBoxREST import IronBoxRESTClient
 
-#---------------------------------------------------
+# ---------------------------------------------------
 # Your IronBox authentication parameters, you could
 # also pass these in as command arguments
-#---------------------------------------------------
+# ---------------------------------------------------
 ironbox_email = "email@email.com"
 ironbox_pwd = "password123"
 ironbox_api_url = "https://api.goironcloud.com/latest/"
 ironbox_api_version = "latest"
 
 # This is the server you log into, minus the "https://"
-context = "secure.goironcloud.com"  
+context = "secure.goironcloud.com"
 
 # Always use '5' which refers to AES-256 secure file
-# transfer containers 
+# transfer containers
 container_type = 5
 
 
 def main():
 
-    IronBoxRESTObj = IronBoxRESTClient(ironbox_email, ironbox_pwd, version=ironbox_api_version, verbose=True)
+    IronBoxRESTObj = IronBoxRESTClient(
+        ironbox_email, ironbox_pwd, version=ironbox_api_version, verbose=True
+    )
 
     # Get all the blobs in a ready state, result is a tuple list
     # where 0 = blob ID and 1 = blob name

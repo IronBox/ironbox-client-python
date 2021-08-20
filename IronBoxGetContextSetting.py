@@ -14,12 +14,12 @@
 """
 
 
-from IronBoxREST import IronBoxRESTClient 
+from IronBoxREST import IronBoxRESTClient
 
-#---------------------------------------------------
+# ---------------------------------------------------
 # Your IronBox authentication parameters, you could
 # also pass these in as command arguments
-#---------------------------------------------------
+# ---------------------------------------------------
 ironbox_email = "email@email.com"
 ironbox_pwd = "password123"
 ironbox_api_url = "https://api.goironcloud.com/latest/"
@@ -29,12 +29,16 @@ Context = "secure.goironcloud.com"
 
 
 def main():
-    
-    IronBoxRESTObj = IronBoxRESTClient(ironbox_email, ironbox_pwd, version=ironbox_api_version, verbose=True)
+
+    IronBoxRESTObj = IronBoxRESTClient(
+        ironbox_email, ironbox_pwd, version=ironbox_api_version, verbose=True
+    )
 
     # Get some public information about the context
     print(f"Company Name: {IronBoxRESTObj.get_context_setting(Context, 'CompanyName')}")
-    print(f"Company Logo URL: {IronBoxRESTObj.get_context_setting(Context, 'CompanyLogoUrl')}")
+    print(
+        f"Company Logo URL: {IronBoxRESTObj.get_context_setting(Context, 'CompanyLogoUrl')}"
+    )
 
 
 if __name__ == "__main__":
