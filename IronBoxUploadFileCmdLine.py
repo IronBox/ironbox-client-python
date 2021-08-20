@@ -13,7 +13,7 @@
 #
 #---------------------------------------------------
 from IronBoxREST import IronBoxRESTClient 
-import sys, os
+import sys
 from os import path
 
 #---------------------------------------------------
@@ -33,28 +33,15 @@ IronBoxFileName = ""
 #---------------------------------------------------
 def main():
     
-    #-----------------------------------------------   
-    #  Parse command line arguments
-    #-----------------------------------------------   
     ContainerID = sys.argv[1]
     IronBoxEmail = sys.argv[2]
     IronBoxPassword = sys.argv[3]
     InFile = sys.argv[4]
     IronBoxFileName = path.basename(InFile) 
  
-    #-----------------------------------------------   
-    #	Create an instance of the IronBox REST class
-    #-----------------------------------------------   
     IronBoxRESTObj = IronBoxRESTClient(IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True)
+    IronBoxRESTObj.upload_file_to_container(ContainerID, InFile, IronBoxFileName)
 
-    #-----------------------------------------------   
-    #	Upload the file to IronBox
-    #	Duplicate file names will automatically
-    #	get renamed
-    #-----------------------------------------------   
-    IronBoxRESTObj.UploadFileToContainer(ContainerID, InFile, IronBoxFileName)
 
-#---------------------------------------------------
-import string, datetime
 if __name__ == "__main__":
     main()

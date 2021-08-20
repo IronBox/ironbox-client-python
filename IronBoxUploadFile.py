@@ -1,13 +1,13 @@
-#!/usr/bin/python
-#---------------------------------------------------
-#   
-#   Demonstrates how to upload a file to 
-#   an IronBox secure package or container
-#
-#   Written by KevinLam@goironbox.com 
-#   Website: www.goironbox.com
-#
-#---------------------------------------------------
+"""
+   Demonstrates how to upload a file to 
+   an IronBox secure package or container
+
+   Written by KevinLam@goironbox.com 
+   Modified by motorific@gmail.com
+   Website: www.goironbox.com
+"""
+
+
 from IronBoxREST import IronBoxRESTClient 
 
 #---------------------------------------------------
@@ -22,24 +22,15 @@ IronBoxAPIVersion = "latest"
 InFile = "test.txt"
 IronBoxFileName = "testFileOnIronBox.txt"
 
-#---------------------------------------------------
-# Main
-#---------------------------------------------------
+
 def main():
     
-    #----------------------------
-    #	Create an instance of the IronBox REST class
-    #----------------------------
+    # Create an instance of the IronBox REST class
     IronBoxRESTObj = IronBoxRESTClient(IronBoxEmail, IronBoxPassword, version=IronBoxAPIVersion, verbose=True)
 
-    #----------------------------
-    #	Upload the file to IronBox
-    #	Duplicate file names will automatically
-    #	get renamed
-    #----------------------------
-    IronBoxRESTObj.UploadFileToContainer(ContainerID, InFile, IronBoxFileName)
+    IronBoxRESTObj.upload_file_to_container(ContainerID, InFile, IronBoxFileName)
 
-#---------------------------------------------------
+
 import string, datetime
 if __name__ == "__main__":
     main()

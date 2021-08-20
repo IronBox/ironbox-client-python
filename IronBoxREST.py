@@ -379,7 +379,7 @@ class IronBoxRESTClient:
         blocks in 4 MB blocks with max 50k blocks, meaning that
         there is a 200 GB max for any file uploaded
 
-        Update 2021: Current MSFT Azure upload allows for larger blobs with new x-ms-version.
+        Update 2021: Current MSFT Azure upload allows for larger blocks with new x-ms-version.
         See: https://docs.microsoft.com/en-us/rest/api/storageservices/put-block#remarks
 
         Service version	Maximum block size (via Put Block)	Maximum blob size (via Put Block List)	Maximum blob size via single write operation (via Put Blob)
