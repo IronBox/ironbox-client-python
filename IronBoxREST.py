@@ -47,16 +47,19 @@
     11/10/2013  -	v1.1 Initial release (beta)
 
 """
-
-
-import os
-import datetime
-import sys
 import base64
+import datetime
+import os
+import sys
+from dataclasses import dataclass
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+
 import requests
 from Crypto.Cipher import AES
-from dataclasses import dataclass
-from typing import Optional, Dict, Any, List, Tuple
 
 
 def pad(s) -> bytes:
